@@ -25,3 +25,16 @@ export {
   type ChecklistOperationResult,
   type ChecklistSummary,
 } from './run-checklist.js';
+
+// Event tracking services
+export {
+  EventProcessor,
+  createEventProcessor,
+  parseUtmParams,
+  parseUtmContent,
+  buildUtmString,
+  buildUtmContent,
+  isValidUlid,
+  extractDomain,
+  normalizeUrl,
+} from './events/index.js';

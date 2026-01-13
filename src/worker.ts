@@ -8,6 +8,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import type { Env, ScheduledEvent, MessageBatch, QueueMessage } from './types/env.js';
+import { createEventRoutes } from './routes/events.js';
 
 // Create Hono app with environment bindings
 const app = new Hono<{ Bindings: Env }>();
@@ -119,6 +120,11 @@ api.post('/queue/send', async (c) => {
 
 // Mount API routes
 app.route('/api', api);
+
+// Mount event tracking routes
+// POST /e - single event
+// POST /e/batch - batch events
+app.route('/e', createEventRoutes());
 
 // 404 handler
 app.notFound((c) => {
