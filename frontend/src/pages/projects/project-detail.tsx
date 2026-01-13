@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -16,6 +17,7 @@ import {
   TableCell,
 } from '@/components/ui';
 import { projectsApi, runsApi } from '@/api';
+import { ProjectSettingsModal } from '@/components/features/project-settings-modal';
 import { ArrowLeft, Plus, Settings } from 'lucide-react';
 import type { RunStatus } from '@/types';
 
@@ -47,6 +49,7 @@ const statusLabels: Record<string, string> = {
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['projects', id],
@@ -101,7 +104,7 @@ export function ProjectDetailPage() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
             <Settings className="mr-2 h-4 w-4" />
             設定
           </Button>
@@ -220,6 +223,14 @@ export function ProjectDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Settings modal */}
+      <ProjectSettingsModal
+        project={project}
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onDeleted={() => navigate('/projects')}
+      />
     </div>
   );
 }

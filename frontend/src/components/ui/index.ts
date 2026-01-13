@@ -18,3 +18,11 @@ export { Textarea, type TextareaProps } from './textarea';
 export { Progress, type ProgressProps } from './progress';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Alert, AlertTitle, AlertDescription, type AlertProps } from './alert';
+export {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogContent,
+  DialogFooter,
+} from './dialog';

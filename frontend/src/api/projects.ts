@@ -26,4 +26,10 @@ export const projectsApi = {
 
   update: (id: string, data: UpdateProjectInput) =>
     apiClient.patch<Project>(`/projects/${id}`, data),
+
+  archive: (id: string) =>
+    apiClient.patch<Project>(`/projects/${id}`, { status: 'archived' }),
+
+  delete: (id: string) =>
+    apiClient.delete<void>(`/projects/${id}`),
 };
