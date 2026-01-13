@@ -1,0 +1,75 @@
+# Launch Test System - Cloudflare Workers Configuration
+name = "launch-test-system"
+main = "src/worker.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Development settings
+[dev]
+port = 8787
+local_protocol = "http"
+
+# Environment variables (non-sensitive)
+[vars]
+ENVIRONMENT = "development"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "launch-test-db"
+database_id = "placeholder-d1-database-id"  # Replace with actual ID after creation
+
+# R2 Storage binding
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "launch-test-storage"
+
+# Queue binding for async processing
+[[queues.producers]]
+binding = "TASK_QUEUE"
+queue = "launch-test-tasks"
+
+[[queues.consumers]]
+queue = "launch-test-tasks"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "launch-test-tasks-dlq"
+
+# Cron Triggers for scheduled tasks
+[triggers]
+crons = [
+  "0 * * * *",     # Every hour - health check
+  "0 0 * * *",     # Daily at midnight - cleanup
+  "*/15 * * * *"   # Every 15 minutes - sync tasks
+]
+
+# Production environment overrides
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "launch-test-db-prod"
+database_id = "placeholder-prod-d1-database-id"  # Replace with actual ID
+
+[[env.production.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "launch-test-storage-prod"
+
+[[env.production.queues.producers]]
+binding = "TASK_QUEUE"
+queue = "launch-test-tasks-prod"
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "launch-test-db-staging"
+database_id = "placeholder-staging-d1-database-id"  # Replace with actual ID
+
+[[env.staging.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "launch-test-storage-staging"
