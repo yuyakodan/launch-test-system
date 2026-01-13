@@ -33,6 +33,7 @@
   ],
   "author": "",
   "dependencies": {
+    "ajv": "^8.17.1",
     "hono": "^4.4.0"
   },
   "devDependencies": {
