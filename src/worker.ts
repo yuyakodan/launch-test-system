@@ -154,7 +154,7 @@ export default {
   /**
    * Scheduled task handler (Cron Triggers)
    */
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(event: ScheduledEvent, _env: Env, _ctx: ExecutionContext): Promise<void> {
     const cronPattern = event.cron;
     console.log(`Running scheduled task: ${cronPattern} at ${new Date().toISOString()}`);
 
@@ -182,7 +182,7 @@ export default {
   /**
    * Queue message handler
    */
-  async queue(batch: MessageBatch<QueueMessage>, env: Env): Promise<void> {
+  async queue(batch: MessageBatch<QueueMessage>, _env: Env): Promise<void> {
     console.log(`Processing ${batch.messages.length} messages`);
 
     for (const message of batch.messages) {
