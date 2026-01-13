@@ -68,3 +68,24 @@ export {
   SUPPORTED_ACTION_TYPES,
   SEVERITY_LEVELS,
 } from './stop-rules.js';
+
+// Statistics types
+export type {
+  ConfidenceLevel,
+  SampleThresholds,
+  VariantMetrics,
+  WilsonCiResult,
+  WilsonCiComparison,
+  BayesianVariantResult,
+  BayesianComparison,
+  RankingEntry,
+  DecisionResult,
+  StatisticsResult,
+  StatisticsConfig,
+} from './statistics.js';
+
+export {
+  DEFAULT_SAMPLE_THRESHOLDS,
+  INSUFFICIENT_THRESHOLDS,
+  DEFAULT_STATISTICS_CONFIG,
+} from './statistics.js';

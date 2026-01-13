@@ -55,3 +55,39 @@ export {
   type IncidentPayload,
   type AuditLogPayload,
 } from './stop-rules/index.js';
+
+// Statistics services
+export {
+  // Wilson CI
+  calculateWilsonCi,
+  calculateVariantWilsonCi,
+  compareVariantsWilsonCi,
+  compareAllVariantsWilsonCi,
+  isSignificantWinner,
+  // Bayesian analysis
+  calculateBayesianPosterior,
+  calculateWinProbabilities,
+  compareBayesian,
+  probabilityABeatsB,
+  calculateExpectedLoss,
+  // Confidence evaluator
+  calculateAggregateMetrics,
+  isInsufficient,
+  isDirectional,
+  isConfident,
+  determineConfidenceLevel,
+  calculateAdditionalSamplesNeeded,
+  generateRationale,
+  determineRecommendation,
+  buildRankingEntries,
+  evaluateConfidence,
+  createVariantMetrics,
+  // Ranking
+  sortVariants,
+  generateRanking,
+  determineWinner,
+  isClearWinner,
+  analyzeVariants,
+  quickAnalysis,
+  type SortCriteria,
+} from './statistics/index.js';
