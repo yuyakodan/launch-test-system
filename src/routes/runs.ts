@@ -918,6 +918,97 @@ export function createRunRoutes() {
     });
   });
 
+  /**
+   * POST /runs/:id/stop - Stop a run (mark as completed)
+   */
+  runs.post('/:id/stop', requirePermission('run', 'launch'), async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+    const runId = c.req.param('id');
+
+    const run = await repos.run.findById(runId);
+    if (!run) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Run not found',
+        },
+        404
+      );
+    }
+
+    // Verify run's project belongs to tenant
+    const belongsToTenant = await repos.project.belongsToTenant(run.projectId, authContext.tenantId);
+    if (!belongsToTenant) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Run not found',
+        },
+        404
+      );
+    }
+
+    // Validate transition to Completed - can stop from Running, Paused, or Live
+    const validStopStatuses = ['Running', 'Paused', 'Live'];
+    if (!validStopStatuses.includes(run.status)) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'invalid_transition',
+          message: `Cannot stop run from ${run.status} status`,
+          validFromStatuses: validStopStatuses,
+        },
+        400
+      );
+    }
+
+    // Update run status to Completed and set completedAt
+    const updatedRun = await repos.run.markCompleted(runId);
+    if (!updatedRun) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'update_failed',
+          message: 'Failed to stop run',
+        },
+        500
+      );
+    }
+
+    // Record in audit log
+    const auditService = new AuditService(c.env.DB);
+    await auditService.log({
+      tenantId: authContext.tenantId,
+      actorUserId: authContext.userId,
+      action: 'stop',
+      targetType: 'run',
+      targetId: runId,
+      before: {
+        status: run.status,
+      },
+      after: {
+        status: updatedRun.status,
+        completedAt: updatedRun.completedAt,
+      },
+      requestId: authContext.requestId,
+      ipHash: c.req.header('CF-Connecting-IP') ?? undefined,
+      userAgent: c.req.header('User-Agent') ?? undefined,
+    });
+
+    return c.json({
+      status: 'ok',
+      data: {
+        id: updatedRun.id,
+        status: updatedRun.status,
+        completedAt: updatedRun.completedAt,
+        updatedAt: updatedRun.updatedAt,
+      },
+    });
+  });
+
   return runs;
 }
 

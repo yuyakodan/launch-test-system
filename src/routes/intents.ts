@@ -395,6 +395,264 @@ export function createIntentRoutes() {
     });
   });
 
+  /**
+   * GET /intents/:id/metrics - Get metrics for an intent
+   *
+   * Returns aggregated metrics for the intent including:
+   * - Total impressions, clicks, conversions
+   * - CTR, CVR, CPA calculations
+   * - Per-variant breakdown
+   */
+  intents.get('/intents/:id/metrics', requirePermission('run', 'read'), async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+    const intentId = c.req.param('id');
+
+    // Get intent
+    const intent = await repos.intent.findById(intentId);
+    if (!intent) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Intent not found',
+        },
+        404
+      );
+    }
+
+    // Verify intent's run's project belongs to tenant
+    const run = await repos.run.findById(intent.runId);
+    if (!run) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Intent not found',
+        },
+        404
+      );
+    }
+
+    const belongsToTenant = await repos.project.belongsToTenant(run.projectId, authContext.tenantId);
+    if (!belongsToTenant) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Intent not found',
+        },
+        404
+      );
+    }
+
+    // Get LP variants for the intent
+    const lpVariants = await repos.lpVariant.findByIntentId(intentId, { limit: 100 });
+
+    // Get Creative variants for the intent
+    const creativeVariants = await repos.creativeVariant.findByIntentId(intentId, { limit: 100 });
+
+    // Get Ad copies for the intent
+    const adCopies = await repos.adCopy.findByIntentId(intentId, { limit: 100 });
+
+    // Build metrics response
+    // In a real implementation, these would be calculated from event data
+    // For now, return placeholder metrics based on variant counts
+    const metrics = {
+      intentId: intent.id,
+      intentTitle: intent.title,
+      summary: {
+        impressions: 0,
+        clicks: 0,
+        conversions: 0,
+        spend: 0,
+        ctr: 0,
+        cvr: 0,
+        cpa: null as number | null,
+      },
+      variants: {
+        lp: {
+          total: lpVariants.total,
+          byStatus: {
+            draft: lpVariants.items.filter((v) => v.approvalStatus === 'draft').length,
+            submitted: lpVariants.items.filter((v) => v.approvalStatus === 'submitted').length,
+            approved: lpVariants.items.filter((v) => v.approvalStatus === 'approved').length,
+            rejected: lpVariants.items.filter((v) => v.approvalStatus === 'rejected').length,
+          },
+          items: lpVariants.items.map((v) => ({
+            id: v.id,
+            version: v.version,
+            status: v.status,
+            approvalStatus: v.approvalStatus,
+            publishedUrl: v.publishedUrl,
+            // Placeholder metrics - would be calculated from events
+            impressions: 0,
+            clicks: 0,
+            conversions: 0,
+          })),
+        },
+        creative: {
+          total: creativeVariants.total,
+          bySize: {
+            '1:1': creativeVariants.items.filter((v) => v.size === '1:1').length,
+            '4:5': creativeVariants.items.filter((v) => v.size === '4:5').length,
+            '9:16': creativeVariants.items.filter((v) => v.size === '9:16').length,
+          },
+          items: creativeVariants.items.map((v) => ({
+            id: v.id,
+            size: v.size,
+            version: v.version,
+            status: v.status,
+            approvalStatus: v.approvalStatus,
+            // Placeholder metrics
+            impressions: 0,
+            clicks: 0,
+          })),
+        },
+        adCopy: {
+          total: adCopies.total,
+          byStatus: {
+            draft: adCopies.items.filter((v) => v.approvalStatus === 'draft').length,
+            submitted: adCopies.items.filter((v) => v.approvalStatus === 'submitted').length,
+            approved: adCopies.items.filter((v) => v.approvalStatus === 'approved').length,
+            rejected: adCopies.items.filter((v) => v.approvalStatus === 'rejected').length,
+          },
+          items: adCopies.items.map((v) => ({
+            id: v.id,
+            version: v.version,
+            status: v.status,
+            approvalStatus: v.approvalStatus,
+            headline: v.headline,
+            // Placeholder metrics
+            impressions: 0,
+            clicks: 0,
+          })),
+        },
+      },
+      run: {
+        id: run.id,
+        name: run.name,
+        status: run.status,
+        operationMode: run.operationMode,
+      },
+      generatedAt: new Date().toISOString(),
+    };
+
+    return c.json({
+      status: 'ok',
+      data: metrics,
+    });
+  });
+
+  /**
+   * POST /intents/:id/metrics - Update metrics for an intent (record event data)
+   *
+   * Accepts event data to update intent metrics
+   */
+  intents.post('/intents/:id/metrics', requirePermission('run', 'update'), async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+    const intentId = c.req.param('id');
+
+    // Get intent
+    const intent = await repos.intent.findById(intentId);
+    if (!intent) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Intent not found',
+        },
+        404
+      );
+    }
+
+    // Verify intent's run's project belongs to tenant
+    const run = await repos.run.findById(intent.runId);
+    if (!run) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Intent not found',
+        },
+        404
+      );
+    }
+
+    const belongsToTenant = await repos.project.belongsToTenant(run.projectId, authContext.tenantId);
+    if (!belongsToTenant) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Intent not found',
+        },
+        404
+      );
+    }
+
+    // Parse request body
+    interface MetricsUpdateRequest {
+      variantId?: string;
+      variantType?: 'lp' | 'creative' | 'adCopy';
+      impressions?: number;
+      clicks?: number;
+      conversions?: number;
+      spend?: number;
+    }
+
+    let body: MetricsUpdateRequest;
+    try {
+      body = await c.req.json<MetricsUpdateRequest>();
+    } catch {
+      return c.json(
+        {
+          status: 'error',
+          error: 'invalid_request',
+          message: 'Invalid JSON body',
+        },
+        400
+      );
+    }
+
+    // In a real implementation, this would:
+    // 1. Validate the variant belongs to this intent
+    // 2. Store the metrics update in a metrics table
+    // 3. Trigger any necessary recalculations
+
+    // For now, return a success acknowledgment
+    const auditService = new AuditService(c.env.DB);
+    await auditService.log({
+      tenantId: authContext.tenantId,
+      actorUserId: authContext.userId,
+      action: 'update',
+      targetType: 'intent_metrics',
+      targetId: intentId,
+      after: {
+        intentId,
+        variantId: body.variantId,
+        variantType: body.variantType,
+        metricsUpdate: {
+          impressions: body.impressions,
+          clicks: body.clicks,
+          conversions: body.conversions,
+          spend: body.spend,
+        },
+      },
+      requestId: authContext.requestId,
+    });
+
+    return c.json({
+      status: 'ok',
+      data: {
+        intentId,
+        message: 'Metrics update recorded',
+        recordedAt: new Date().toISOString(),
+      },
+    });
+  });
+
   return intents;
 }
 

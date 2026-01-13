@@ -15,6 +15,7 @@ import { createProjectRoutes } from './routes/projects.js';
 import { createRunRoutes } from './routes/runs.js';
 import { createIntentRoutes } from './routes/intents.js';
 import { createDecisionRoutes } from './routes/decisions.js';
+import { createVariantRoutes } from './routes/variants.js';
 
 // Create Hono app with environment bindings
 const app = new Hono<{ Bindings: Env }>();
@@ -150,18 +151,31 @@ api.route('/projects', createProjectRoutes());
 // POST /api/runs/:id/stop-dsl - Set stop DSL
 // POST /api/runs/:id/launch - Launch run
 // POST /api/runs/:id/pause - Pause run
+// POST /api/runs/:id/stop - Stop run (mark completed)
 api.route('/runs', createRunRoutes());
 
 // Mount Intent routes
 // GET /api/runs/:runId/intents - List intents for run
 // POST /api/runs/:runId/intents - Create intent for run
 // PATCH /api/intents/:id - Update intent
+// GET /api/intents/:id/metrics - Get intent metrics
+// POST /api/intents/:id/metrics - Update intent metrics
 api.route('/', createIntentRoutes());
 
 // Mount Decision routes
 // POST /api/runs/:id/decide - Make decision
 // GET /api/runs/:id/report - Get report
 api.route('/', createDecisionRoutes());
+
+// Mount Variant routes
+// GET /api/intents/:intentId/lp-variants - List LP variants
+// POST /api/intents/:intentId/lp-variants - Create LP variant
+// GET /api/intents/:intentId/creative-variants - List creative variants
+// POST /api/intents/:intentId/creative-variants - Create creative variant
+// GET /api/intents/:intentId/ad-copies - List ad copies
+// POST /api/intents/:intentId/ad-copies - Create ad copy
+// PATCH /api/ad-copies/:id - Update ad copy
+api.route('/', createVariantRoutes());
 
 // Mount API routes
 app.route('/api', api);
