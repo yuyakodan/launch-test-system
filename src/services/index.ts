@@ -38,3 +38,20 @@ export {
   extractDomain,
   normalizeUrl,
 } from './events/index.js';
+
+// Stop rules DSL services
+export {
+  DslParser,
+  DslParseError,
+  createDslParser,
+  RuleEvaluator,
+  createRuleEvaluator,
+  ActionExecutor,
+  createActionExecutor,
+  createMockDependencies,
+  type ActionExecutorDependencies,
+  type ActionExecutorContext,
+  type NotificationPayload,
+  type IncidentPayload,
+  type AuditLogPayload,
+} from './stop-rules/index.js';
