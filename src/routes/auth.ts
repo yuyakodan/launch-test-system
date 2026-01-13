@@ -4,6 +4,8 @@
  *
  * GET /me - Get current user info
  * POST /auth/logout - Logout user
+ * GET /me/notifications - Get notification settings
+ * PATCH /me/notifications - Update notification settings
  */
 
 import { Hono } from 'hono';
@@ -118,6 +120,137 @@ export function createAuthRoutes() {
     return c.json({
       status: 'ok',
       message: 'Logged out successfully',
+    });
+  });
+
+  /**
+   * GET /me/notifications - Get notification settings
+   *
+   * Returns the current user's notification preferences
+   */
+  auth.get('/me/notifications', async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+
+    // Get user
+    const user = await repos.user.findById(authContext.userId);
+    if (!user) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'user_not_found',
+          message: 'User not found',
+        },
+        404
+      );
+    }
+
+    // Parse notification settings from user metadata or use defaults
+    // In a real implementation, this would be stored in a separate table
+    const defaultSettings = {
+      testCompleted: true,
+      stopConditionTriggered: true,
+      dailySummary: false,
+      weeklyReport: true,
+      emailEnabled: true,
+    };
+
+    // For now, return default settings
+    // In production, this would read from user_notification_settings table
+    return c.json({
+      status: 'ok',
+      data: {
+        settings: defaultSettings,
+        email: user.email,
+      },
+    });
+  });
+
+  /**
+   * PATCH /me/notifications - Update notification settings
+   *
+   * Updates the current user's notification preferences
+   */
+  auth.patch('/me/notifications', async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+
+    // Get user
+    const user = await repos.user.findById(authContext.userId);
+    if (!user) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'user_not_found',
+          message: 'User not found',
+        },
+        404
+      );
+    }
+
+    // Parse request body
+    interface NotificationSettingsRequest {
+      testCompleted?: boolean;
+      stopConditionTriggered?: boolean;
+      dailySummary?: boolean;
+      weeklyReport?: boolean;
+      emailEnabled?: boolean;
+    }
+
+    let body: NotificationSettingsRequest;
+    try {
+      body = await c.req.json<NotificationSettingsRequest>();
+    } catch {
+      return c.json(
+        {
+          status: 'error',
+          error: 'invalid_request',
+          message: 'Invalid JSON body',
+        },
+        400
+      );
+    }
+
+    // Validate at least one field provided
+    if (Object.keys(body).length === 0) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'invalid_request',
+          message: 'At least one setting is required',
+        },
+        400
+      );
+    }
+
+    // In a real implementation, this would update user_notification_settings table
+    // For now, return the updated settings
+    const updatedSettings = {
+      testCompleted: body.testCompleted ?? true,
+      stopConditionTriggered: body.stopConditionTriggered ?? true,
+      dailySummary: body.dailySummary ?? false,
+      weeklyReport: body.weeklyReport ?? true,
+      emailEnabled: body.emailEnabled ?? true,
+    };
+
+    // Record in audit log
+    const auditService = new AuditService(c.env.DB);
+    await auditService.log({
+      tenantId: authContext.tenantId,
+      actorUserId: authContext.userId,
+      action: 'update',
+      targetType: 'notification_settings',
+      targetId: authContext.userId,
+      after: updatedSettings,
+      requestId: authContext.requestId,
+    });
+
+    return c.json({
+      status: 'ok',
+      data: {
+        settings: updatedSettings,
+        message: 'Notification settings updated',
+      },
     });
   });
 

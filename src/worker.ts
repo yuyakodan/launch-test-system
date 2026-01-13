@@ -128,6 +128,8 @@ api.post('/queue/send', async (c) => {
 // Mount Auth routes
 // GET /api/me - Get current user
 // POST /api/auth/logout - Logout
+// GET /api/me/notifications - Get notification settings
+// PATCH /api/me/notifications - Update notification settings
 api.route('/', createAuthRoutes());
 
 // Mount Tenant routes
