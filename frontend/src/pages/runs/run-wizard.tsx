@@ -67,10 +67,9 @@ export function RunWizardPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       const run = await runsApi.create({
-        project_id: formData.project_id,
+        projectId: formData.project_id,
         name: formData.name,
-        mode: formData.mode,
-        budget_cap: formData.budget_cap,
+        operationMode: formData.mode,
       });
 
       // Set design

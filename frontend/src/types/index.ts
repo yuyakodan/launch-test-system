@@ -236,6 +236,15 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// List API response type (actual backend response format)
+export interface ListResponse<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
 // Auth types
 export interface AuthState {
   user: User | null;

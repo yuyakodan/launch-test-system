@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Project, ProjectConfig } from '@/types';
+import type { Project, ProjectConfig, ListResponse } from '@/types';
 
 export interface CreateProjectInput {
   name: string;
@@ -15,8 +15,10 @@ export interface UpdateProjectInput {
 }
 
 export const projectsApi = {
-  list: (params?: { status?: string; page?: number; limit?: number }) =>
-    apiClient.get<Project[]>('/projects', params),
+  list: async (params?: { status?: string; page?: number; limit?: number }): Promise<Project[]> => {
+    const response = await apiClient.get<ListResponse<Project>>('/projects', params);
+    return response.items;
+  },
 
   get: (id: string) => apiClient.get<Project>(`/projects/${id}`),
 

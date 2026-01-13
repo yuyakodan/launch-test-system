@@ -78,31 +78,36 @@ export function ProjectListPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <Link
-                        to={`/projects/${project.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {project.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground max-w-xs truncate">
-                      {project.description || '-'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={project.status === 'active' ? 'default' : 'secondary'}
-                      >
-                        {project.status === 'active' ? 'アクティブ' : 'アーカイブ'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(project.created_at).toLocaleDateString('ja-JP')}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {projects.map((project) => {
+                  const createdAt = project.created_at ?? project.createdAt;
+                  // archivedAtがnull/undefinedならアクティブ、それ以外はアーカイブ
+                  const isActive = project.archivedAt == null && (project.status == null || ['active', 'Active'].includes(project.status));
+                  return (
+                    <TableRow key={project.id}>
+                      <TableCell>
+                        <Link
+                          to={`/projects/${project.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {project.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground max-w-xs truncate">
+                        {project.description || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={isActive ? 'default' : 'secondary'}
+                        >
+                          {isActive ? 'アクティブ' : 'アーカイブ'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {createdAt ? new Date(createdAt).toLocaleDateString('ja-JP') : '-'}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

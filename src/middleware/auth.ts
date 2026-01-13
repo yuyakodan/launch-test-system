@@ -126,6 +126,26 @@ export function generateRequestId(): string {
 }
 
 /**
+ * Demo token for development/testing
+ */
+const DEMO_TOKEN = 'demo-token';
+
+/**
+ * Create demo auth context
+ */
+function createDemoAuthContext(requestId: string): AuthContext {
+  return {
+    userId: '01HTEST0000USER000000001',
+    email: 'admin@demo.example.com',
+    name: 'デモユーザー',
+    tenantId: '01HTEST0000TENANT00000001',
+    role: 'owner',
+    tokenId: 'demo-token-id',
+    requestId,
+  };
+}
+
+/**
  * Authentication middleware factory
  * Creates a middleware that verifies Bearer tokens and populates auth context
  */
@@ -151,6 +171,14 @@ export function authMiddleware(): MiddlewareHandler<{
         },
         error.statusCode as 401 | 403
       );
+    }
+
+    // Check for demo token (development mode)
+    if (token === DEMO_TOKEN) {
+      const authContext = createDemoAuthContext(requestId);
+      c.set('auth', authContext);
+      await next();
+      return;
     }
 
     // Decode JWT

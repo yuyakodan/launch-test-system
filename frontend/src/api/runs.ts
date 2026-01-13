@@ -1,22 +1,22 @@
 import { apiClient } from './client';
-import type { Run, RunDesign, StopDSL, FixedGranularity, RunReport, Decision } from '@/types';
+import type { Run, RunDesign, StopDSL, FixedGranularity, RunReport, Decision, ListResponse } from '@/types';
 
 export interface CreateRunInput {
-  project_id: string;
+  projectId: string;
   name: string;
-  mode?: 'manual' | 'hybrid' | 'auto';
-  budget_cap: number;
+  operationMode?: 'manual' | 'hybrid' | 'auto';
 }
 
 export interface UpdateRunInput {
   name?: string;
-  mode?: 'manual' | 'hybrid' | 'auto';
-  budget_cap?: number;
+  operationMode?: 'manual' | 'hybrid' | 'auto';
 }
 
 export const runsApi = {
-  list: (params?: { project_id?: string; status?: string; page?: number; limit?: number }) =>
-    apiClient.get<Run[]>('/runs', params),
+  list: async (params?: { project_id?: string; status?: string; page?: number; limit?: number }): Promise<Run[]> => {
+    const response = await apiClient.get<ListResponse<Run>>('/runs', params);
+    return response.items;
+  },
 
   get: (id: string) => apiClient.get<Run>(`/runs/${id}`),
 

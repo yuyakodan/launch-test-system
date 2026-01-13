@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Intent, LpVariant, CreativeVariant, AdCopy, RunMetrics } from '@/types';
+import type { Intent, LpVariant, CreativeVariant, AdCopy, RunMetrics, ListResponse } from '@/types';
 
 export interface CreateIntentInput {
   name: string;
@@ -20,7 +20,10 @@ export interface UpdateIntentInput {
 
 export const intentsApi = {
   // Intent CRUD
-  list: (runId: string) => apiClient.get<Intent[]>(`/runs/${runId}/intents`),
+  list: async (runId: string): Promise<Intent[]> => {
+    const response = await apiClient.get<ListResponse<Intent>>(`/runs/${runId}/intents`);
+    return response.items;
+  },
 
   create: (runId: string, data: CreateIntentInput) =>
     apiClient.post<Intent>(`/runs/${runId}/intents`, data),

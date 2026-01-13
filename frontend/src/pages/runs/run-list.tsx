@@ -20,32 +20,54 @@ import { runsApi } from '@/api';
 import { Plus, PlayCircle } from 'lucide-react';
 import type { RunStatus } from '@/types';
 
-const statusLabels: Record<RunStatus, string> = {
+const statusLabels: Record<string, string> = {
   draft: '下書き',
+  Draft: '下書き',
   designing: '設計中',
+  Designing: '設計中',
   generating: '生成中',
+  Generating: '生成中',
   ready_for_review: 'レビュー待ち',
+  ReadyForReview: 'レビュー待ち',
   approved: '承認済み',
+  Approved: '承認済み',
   publishing: '公開中',
+  Publishing: '公開中',
   live: 'ライブ',
+  Live: 'ライブ',
   running: '実行中',
+  Running: '実行中',
   paused: '一時停止',
+  Paused: '一時停止',
   completed: '完了',
+  Completed: '完了',
   archived: 'アーカイブ',
+  Archived: 'アーカイブ',
 };
 
-const statusVariants: Record<RunStatus, 'default' | 'secondary' | 'outline'> = {
+const statusVariants: Record<string, 'default' | 'secondary' | 'outline'> = {
   draft: 'secondary',
+  Draft: 'secondary',
   designing: 'secondary',
+  Designing: 'secondary',
   generating: 'secondary',
+  Generating: 'secondary',
   ready_for_review: 'outline',
+  ReadyForReview: 'outline',
   approved: 'default',
+  Approved: 'default',
   publishing: 'secondary',
+  Publishing: 'secondary',
   live: 'default',
+  Live: 'default',
   running: 'default',
+  Running: 'default',
   paused: 'outline',
+  Paused: 'outline',
   completed: 'secondary',
+  Completed: 'secondary',
   archived: 'secondary',
+  Archived: 'secondary',
 };
 
 export function RunListPage() {
@@ -110,9 +132,11 @@ export function RunListPage() {
               </TableHeader>
               <TableBody>
                 {runs.map((run) => {
-                  const progress = run.budget_cap > 0
-                    ? (run.spend_total / run.budget_cap) * 100
-                    : 0;
+                  const budgetCap = run.budget_cap ?? 0;
+                  const spendTotal = run.spend_total ?? 0;
+                  const progress = budgetCap > 0 ? (spendTotal / budgetCap) * 100 : 0;
+                  const mode = run.mode ?? run.operationMode ?? '-';
+                  const startedAt = run.started_at ?? run.launchedAt;
                   return (
                     <TableRow key={run.id}>
                       <TableCell>
@@ -124,22 +148,26 @@ export function RunListPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusVariants[run.status]}>
-                          {statusLabels[run.status]}
+                        <Badge variant={statusVariants[run.status] ?? 'secondary'}>
+                          {statusLabels[run.status] ?? run.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="capitalize">{run.mode}</TableCell>
+                      <TableCell className="capitalize">{mode}</TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          <Progress value={progress} className="h-2 w-24" />
-                          <p className="text-xs text-muted-foreground">
-                            ¥{run.spend_total.toLocaleString()} / ¥{run.budget_cap.toLocaleString()}
-                          </p>
-                        </div>
+                        {budgetCap > 0 ? (
+                          <div className="space-y-1">
+                            <Progress value={progress} className="h-2 w-24" />
+                            <p className="text-xs text-muted-foreground">
+                              ¥{spendTotal.toLocaleString()} / ¥{budgetCap.toLocaleString()}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {run.started_at
-                          ? new Date(run.started_at).toLocaleDateString('ja-JP')
+                        {startedAt
+                          ? new Date(startedAt).toLocaleDateString('ja-JP')
                           : '-'}
                       </TableCell>
                     </TableRow>

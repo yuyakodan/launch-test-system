@@ -95,11 +95,11 @@ export function IntentDetailPage() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{intent.name}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{intent.name ?? intent.title}</h1>
             <Badge variant="outline">{intent.status}</Badge>
           </div>
-          {intent.description && (
-            <p className="text-muted-foreground mt-2">{intent.description}</p>
+          {(intent.description ?? intent.hypothesis) && (
+            <p className="text-muted-foreground mt-2">{intent.description ?? intent.hypothesis}</p>
           )}
         </div>
       </div>
@@ -112,16 +112,16 @@ export function IntentDetailPage() {
         <CardContent>
           <dl className="grid gap-4 md:grid-cols-3">
             <div>
-              <dt className="text-sm text-muted-foreground">ターゲット</dt>
-              <dd className="mt-1 font-medium">{intent.target_audience}</dd>
+              <dt className="text-sm text-muted-foreground">ターゲット/仮説</dt>
+              <dd className="mt-1 font-medium">{intent.target_audience ?? intent.hypothesis ?? '-'}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">キーメッセージ</dt>
-              <dd className="mt-1 font-medium">{intent.key_message}</dd>
+              <dd className="mt-1 font-medium">{intent.key_message ?? '-'}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">CTA</dt>
-              <dd className="mt-1 font-medium">{intent.cta}</dd>
+              <dt className="text-sm text-muted-foreground">CTA / 優先度</dt>
+              <dd className="mt-1 font-medium">{intent.cta ?? (intent.priority !== undefined ? `優先度: ${intent.priority}` : '-')}</dd>
             </div>
           </dl>
         </CardContent>

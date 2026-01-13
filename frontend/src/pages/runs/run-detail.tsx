@@ -36,18 +36,29 @@ import {
 } from 'lucide-react';
 import type { RunStatus, ConfidenceLevel } from '@/types';
 
-const statusLabels: Record<RunStatus, string> = {
+const statusLabels: Record<string, string> = {
   draft: '下書き',
+  Draft: '下書き',
   designing: '設計中',
+  Designing: '設計中',
   generating: '生成中',
+  Generating: '生成中',
   ready_for_review: 'レビュー待ち',
+  ReadyForReview: 'レビュー待ち',
   approved: '承認済み',
+  Approved: '承認済み',
   publishing: '公開中',
+  Publishing: '公開中',
   live: 'ライブ',
+  Live: 'ライブ',
   running: '実行中',
+  Running: '実行中',
   paused: '一時停止',
+  Paused: '一時停止',
   completed: '完了',
+  Completed: '完了',
   archived: 'アーカイブ',
+  Archived: 'アーカイブ',
 };
 
 const confidenceLabels: Record<ConfidenceLevel, { label: string; variant: 'confident' | 'directional' | 'insufficient' }> = {
@@ -109,10 +120,15 @@ export function RunDetailPage() {
     );
   }
 
-  const budgetProgress = run.budget_cap > 0 ? (run.spend_total / run.budget_cap) * 100 : 0;
-  const canLaunch = ['approved', 'paused'].includes(run.status);
-  const canPause = ['running', 'live'].includes(run.status);
-  const canStop = ['running', 'live', 'paused'].includes(run.status);
+  const budgetCap = run.budget_cap ?? 0;
+  const spendTotal = run.spend_total ?? 0;
+  const budgetProgress = budgetCap > 0 ? (spendTotal / budgetCap) * 100 : 0;
+  const mode = run.mode ?? run.operationMode ?? '-';
+  const createdAt = run.created_at ?? run.createdAt;
+  const startedAt = run.started_at ?? run.launchedAt;
+  const canLaunch = ['approved', 'paused', 'Approved', 'Paused'].includes(run.status);
+  const canPause = ['running', 'live', 'Running', 'Live'].includes(run.status);
+  const canStop = ['running', 'live', 'paused', 'Running', 'Live', 'Paused'].includes(run.status);
 
   return (
     <div className="space-y-6">
@@ -126,12 +142,12 @@ export function RunDetailPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{run.name}</h1>
-            <Badge>{statusLabels[run.status]}</Badge>
-            <Badge variant="outline" className="capitalize">{run.mode}</Badge>
+            <Badge>{statusLabels[run.status] ?? run.status}</Badge>
+            <Badge variant="outline" className="capitalize">{mode}</Badge>
           </div>
           <p className="text-muted-foreground mt-2">
-            作成日: {new Date(run.created_at).toLocaleDateString('ja-JP')}
-            {run.started_at && ` / 開始日: ${new Date(run.started_at).toLocaleDateString('ja-JP')}`}
+            作成日: {createdAt ? new Date(createdAt).toLocaleDateString('ja-JP') : '-'}
+            {startedAt && ` / 開始日: ${new Date(startedAt).toLocaleDateString('ja-JP')}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -157,17 +173,19 @@ export function RunDetailPage() {
       </div>
 
       {/* Budget progress */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">予算消化</span>
-            <span className="text-sm text-muted-foreground">
-              ¥{run.spend_total.toLocaleString()} / ¥{run.budget_cap.toLocaleString()}
-            </span>
-          </div>
-          <Progress value={budgetProgress} />
-        </CardContent>
-      </Card>
+      {budgetCap > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">予算消化</span>
+              <span className="text-sm text-muted-foreground">
+                ¥{spendTotal.toLocaleString()} / ¥{budgetCap.toLocaleString()}
+              </span>
+            </div>
+            <Progress value={budgetProgress} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Decision/Report */}
       {report?.decision && (
@@ -233,6 +251,8 @@ export function RunDetailPage() {
                   <TableBody>
                     {intents.map((intent) => {
                       const ranking = report?.rankings.find((r) => r.intentId === intent.id);
+                      const intentName = intent.name ?? intent.title ?? '-';
+                      const targetAudience = intent.target_audience ?? intent.hypothesis ?? '-';
                       return (
                         <TableRow key={intent.id}>
                           <TableCell>
@@ -240,14 +260,14 @@ export function RunDetailPage() {
                               to={`/runs/${id}/intents/${intent.id}`}
                               className="font-medium hover:underline flex items-center gap-2"
                             >
-                              {intent.name}
+                              {intentName}
                               {ranking?.isWinner && (
                                 <CheckCircle className="h-4 w-4 text-green-600" />
                               )}
                             </Link>
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {intent.target_audience}
+                            {targetAudience}
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{intent.status}</Badge>

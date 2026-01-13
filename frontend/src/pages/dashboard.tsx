@@ -13,19 +13,32 @@ import { projectsApi, runsApi } from '@/api';
 import { Plus, ArrowRight, PlayCircle, CheckCircle, PauseCircle, Clock } from 'lucide-react';
 import type { RunStatus } from '@/types';
 
-const statusConfig: Record<RunStatus, { label: string; color: string; icon: typeof PlayCircle }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: typeof PlayCircle }> = {
   draft: { label: '下書き', color: 'bg-gray-500', icon: Clock },
+  Draft: { label: '下書き', color: 'bg-gray-500', icon: Clock },
   designing: { label: '設計中', color: 'bg-blue-500', icon: Clock },
+  Designing: { label: '設計中', color: 'bg-blue-500', icon: Clock },
   generating: { label: '生成中', color: 'bg-blue-500', icon: Clock },
+  Generating: { label: '生成中', color: 'bg-blue-500', icon: Clock },
   ready_for_review: { label: 'レビュー待ち', color: 'bg-yellow-500', icon: Clock },
+  ReadyForReview: { label: 'レビュー待ち', color: 'bg-yellow-500', icon: Clock },
   approved: { label: '承認済み', color: 'bg-green-500', icon: CheckCircle },
+  Approved: { label: '承認済み', color: 'bg-green-500', icon: CheckCircle },
   publishing: { label: '公開中', color: 'bg-blue-500', icon: Clock },
+  Publishing: { label: '公開中', color: 'bg-blue-500', icon: Clock },
   live: { label: 'ライブ', color: 'bg-green-500', icon: PlayCircle },
+  Live: { label: 'ライブ', color: 'bg-green-500', icon: PlayCircle },
   running: { label: '実行中', color: 'bg-green-500', icon: PlayCircle },
+  Running: { label: '実行中', color: 'bg-green-500', icon: PlayCircle },
   paused: { label: '一時停止', color: 'bg-yellow-500', icon: PauseCircle },
+  Paused: { label: '一時停止', color: 'bg-yellow-500', icon: PauseCircle },
   completed: { label: '完了', color: 'bg-gray-500', icon: CheckCircle },
+  Completed: { label: '完了', color: 'bg-gray-500', icon: CheckCircle },
   archived: { label: 'アーカイブ', color: 'bg-gray-500', icon: CheckCircle },
+  Archived: { label: 'アーカイブ', color: 'bg-gray-500', icon: CheckCircle },
 };
+
+const defaultStatusConfig = { label: '不明', color: 'bg-gray-400', icon: Clock };
 
 export function DashboardPage() {
   const { data: projects = [] } = useQuery({
@@ -38,8 +51,8 @@ export function DashboardPage() {
     queryFn: () => runsApi.list({ limit: 5 }),
   });
 
-  const activeRuns = runs.filter((r) => ['running', 'live'].includes(r.status));
-  const pendingRuns = runs.filter((r) => ['ready_for_review', 'approved'].includes(r.status));
+  const activeRuns = runs.filter((r) => ['running', 'live', 'Running', 'Live'].includes(r.status));
+  const pendingRuns = runs.filter((r) => ['ready_for_review', 'approved', 'ReadyForReview', 'Approved'].includes(r.status));
 
   return (
     <div className="space-y-6">
@@ -94,7 +107,7 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {runs.filter((r) => r.status === 'completed').length}
+              {runs.filter((r) => r.status === 'completed' || r.status === 'Completed').length}
             </div>
           </CardContent>
         </Card>
@@ -130,7 +143,7 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-4">
               {runs.slice(0, 5).map((run) => {
-                const config = statusConfig[run.status];
+                const config = statusConfig[run.status] || defaultStatusConfig;
                 const Icon = config.icon;
                 return (
                   <Link
@@ -145,8 +158,7 @@ export function DashboardPage() {
                       <div>
                         <p className="font-medium">{run.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          予算: ¥{run.budget_cap.toLocaleString()} / 消化: ¥
-                          {run.spend_total.toLocaleString()}
+                          ステータス: {config.label}
                         </p>
                       </div>
                     </div>

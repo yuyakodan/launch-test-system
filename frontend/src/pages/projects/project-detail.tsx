@@ -19,18 +19,29 @@ import { projectsApi, runsApi } from '@/api';
 import { ArrowLeft, Plus, Settings } from 'lucide-react';
 import type { RunStatus } from '@/types';
 
-const statusLabels: Record<RunStatus, string> = {
+const statusLabels: Record<string, string> = {
   draft: '下書き',
+  Draft: '下書き',
   designing: '設計中',
+  Designing: '設計中',
   generating: '生成中',
+  Generating: '生成中',
   ready_for_review: 'レビュー待ち',
+  ReadyForReview: 'レビュー待ち',
   approved: '承認済み',
+  Approved: '承認済み',
   publishing: '公開中',
+  Publishing: '公開中',
   live: 'ライブ',
+  Live: 'ライブ',
   running: '実行中',
+  Running: '実行中',
   paused: '一時停止',
+  Paused: '一時停止',
   completed: '完了',
+  Completed: '完了',
   archived: 'アーカイブ',
+  Archived: 'アーカイブ',
 };
 
 export function ProjectDetailPage() {
@@ -76,9 +87,14 @@ export function ProjectDetailPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-            <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-              {project.status === 'active' ? 'アクティブ' : 'アーカイブ'}
-            </Badge>
+            {(() => {
+              const isActive = project.archivedAt == null && (project.status == null || ['active', 'Active'].includes(project.status));
+              return (
+                <Badge variant={isActive ? 'default' : 'secondary'}>
+                  {isActive ? 'アクティブ' : 'アーカイブ'}
+                </Badge>
+              );
+            })()}
           </div>
           {project.description && (
             <p className="text-muted-foreground mt-2">{project.description}</p>
@@ -114,7 +130,7 @@ export function ProjectDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {runs.filter((r) => ['running', 'live'].includes(r.status)).length}
+              {runs.filter((r) => ['running', 'live', 'Running', 'Live'].includes(r.status)).length}
             </div>
           </CardContent>
         </Card>
@@ -124,7 +140,7 @@ export function ProjectDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {runs.filter((r) => r.status === 'completed').length}
+              {runs.filter((r) => ['completed', 'Completed'].includes(r.status)).length}
             </div>
           </CardContent>
         </Card>
@@ -134,7 +150,7 @@ export function ProjectDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ¥{runs.reduce((sum, r) => sum + r.spend_total, 0).toLocaleString()}
+              ¥{runs.reduce((sum, r) => sum + (r.spend_total ?? 0), 0).toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -172,27 +188,33 @@ export function ProjectDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {runs.map((run) => (
-                  <TableRow key={run.id}>
-                    <TableCell>
-                      <Link
-                        to={`/runs/${run.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {run.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{statusLabels[run.status]}</Badge>
-                    </TableCell>
-                    <TableCell className="capitalize">{run.mode}</TableCell>
-                    <TableCell>¥{run.budget_cap.toLocaleString()}</TableCell>
-                    <TableCell>¥{run.spend_total.toLocaleString()}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(run.created_at).toLocaleDateString('ja-JP')}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {runs.map((run) => {
+                  const budgetCap = run.budget_cap ?? 0;
+                  const spendTotal = run.spend_total ?? 0;
+                  const mode = run.mode ?? run.operationMode ?? '-';
+                  const createdAt = run.created_at ?? run.createdAt;
+                  return (
+                    <TableRow key={run.id}>
+                      <TableCell>
+                        <Link
+                          to={`/runs/${run.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {run.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{statusLabels[run.status] ?? run.status}</Badge>
+                      </TableCell>
+                      <TableCell className="capitalize">{mode}</TableCell>
+                      <TableCell>¥{budgetCap.toLocaleString()}</TableCell>
+                      <TableCell>¥{spendTotal.toLocaleString()}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {createdAt ? new Date(createdAt).toLocaleDateString('ja-JP') : '-'}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
