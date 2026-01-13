@@ -12,3 +12,16 @@ export {
   createAuditLogHelper,
   type AuditLogEntry,
 } from './audit.js';
+
+// Run state machine service
+export {
+  RunStateMachine,
+  createValidationContext,
+} from './run-state-machine.js';
+
+// Run checklist service
+export {
+  RunChecklistService,
+  type ChecklistOperationResult,
+  type ChecklistSummary,
+} from './run-checklist.js';
