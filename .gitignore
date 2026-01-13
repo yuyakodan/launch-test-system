@@ -28,6 +28,9 @@ npm-debug.log*
 .cache/
 .turbo/
 
+# Wrangler local state
+.wrangler/
+
 # AI logs (keep structure, ignore contents)
 .ai/logs/*
 !.ai/logs/.gitkeep

@@ -1,0 +1,12 @@
+# Cloudflare Pages configuration
+name = "launch-test-frontend"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "./dist"
+
+# Development settings
+[dev]
+port = 3000
+
+# Environment variables
+[vars]
+VITE_API_URL = "/api"
