@@ -130,6 +130,11 @@ api.post('/queue/send', async (c) => {
 // POST /api/auth/logout - Logout
 // GET /api/me/notifications - Get notification settings
 // PATCH /api/me/notifications - Update notification settings
+// GET /api/me/api-keys - List API keys
+// POST /api/me/api-keys - Generate new API key
+// DELETE /api/me/api-keys/:id - Revoke API key
+// GET /api/me/webhooks - Get webhook settings
+// PATCH /api/me/webhooks - Update webhook settings
 api.route('/', createAuthRoutes());
 
 // Mount Tenant routes
