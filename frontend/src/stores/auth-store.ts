@@ -7,6 +7,7 @@ interface AuthStore extends AuthState {
   setTenant: (tenant: Tenant | null) => void;
   setAuth: (user: User | null, tenant: Tenant | null) => void;
   logout: () => void;
+  setHydrated: () => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -41,6 +42,8 @@ export const useAuthStore = create<AuthStore>()(
           isAuthenticated: false,
           isLoading: false,
         }),
+
+      setHydrated: () => set({ isLoading: false }),
     }),
     {
       name: 'auth-storage',
@@ -49,6 +52,10 @@ export const useAuthStore = create<AuthStore>()(
         tenant: state.tenant,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Called when hydration is complete
+        state?.setHydrated();
+      },
     }
   )
 );

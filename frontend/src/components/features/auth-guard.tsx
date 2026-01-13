@@ -7,9 +7,18 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const location = useLocation();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
 
-  // Check for token
+  // Wait for hydration to complete
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">読み込み中...</div>
+      </div>
+    );
+  }
+
+  // Check for token as fallback
   const token = localStorage.getItem('auth_token');
 
   if (!isAuthenticated && !token) {
