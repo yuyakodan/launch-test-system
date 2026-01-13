@@ -9,7 +9,6 @@ import type {
   MembershipRole,
   Permission,
   RoleCapabilities,
-  ROLE_HIERARCHY,
 } from '../types/auth.js';
 import type { AuthVariables } from './auth.js';
 

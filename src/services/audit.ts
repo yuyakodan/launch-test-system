@@ -3,7 +3,6 @@
  * Provides tamper-evident audit logging with hash chain verification
  */
 
-import type { AuditLog } from '../types/entities.js';
 import type { AuditAction, AuditLogInput } from '../types/auth.js';
 import { ulid } from '../lib/ulid.js';
 

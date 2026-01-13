@@ -9,6 +9,12 @@ import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import type { Env, ScheduledEvent, MessageBatch, QueueMessage } from './types/env.js';
 import { createEventRoutes } from './routes/events.js';
+import { createAuthRoutes } from './routes/auth.js';
+import { createTenantRoutes } from './routes/tenants.js';
+import { createProjectRoutes } from './routes/projects.js';
+import { createRunRoutes } from './routes/runs.js';
+import { createIntentRoutes } from './routes/intents.js';
+import { createDecisionRoutes } from './routes/decisions.js';
 
 // Create Hono app with environment bindings
 const app = new Hono<{ Bindings: Env }>();
@@ -20,7 +26,7 @@ app.use(
   '*',
   cors({
     origin: '*',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
   })
 );
@@ -117,6 +123,45 @@ api.post('/queue/send', async (c) => {
     );
   }
 });
+
+// Mount Auth routes
+// GET /api/me - Get current user
+// POST /api/auth/logout - Logout
+api.route('/', createAuthRoutes());
+
+// Mount Tenant routes
+// GET /api/tenant - Get current tenant
+// PATCH /api/tenant - Update tenant
+api.route('/tenant', createTenantRoutes());
+
+// Mount Project routes
+// GET /api/projects - List projects
+// POST /api/projects - Create project
+// GET /api/projects/:id - Get project
+// PATCH /api/projects/:id - Update project
+api.route('/projects', createProjectRoutes());
+
+// Mount Run routes
+// GET /api/runs - List runs
+// POST /api/runs - Create run
+// GET /api/runs/:id - Get run
+// PATCH /api/runs/:id - Update run
+// POST /api/runs/:id/design - Set run design
+// POST /api/runs/:id/stop-dsl - Set stop DSL
+// POST /api/runs/:id/launch - Launch run
+// POST /api/runs/:id/pause - Pause run
+api.route('/runs', createRunRoutes());
+
+// Mount Intent routes
+// GET /api/runs/:runId/intents - List intents for run
+// POST /api/runs/:runId/intents - Create intent for run
+// PATCH /api/intents/:id - Update intent
+api.route('/', createIntentRoutes());
+
+// Mount Decision routes
+// POST /api/runs/:id/decide - Make decision
+// GET /api/runs/:id/report - Get report
+api.route('/', createDecisionRoutes());
 
 // Mount API routes
 app.route('/api', api);
