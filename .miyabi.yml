@@ -1,0 +1,47 @@
+# Miyabi Configuration
+
+project:
+  name: launch-test-system
+  repository: yuyakodan/launch-test-system
+
+agents:
+  coordinator:
+    enabled: true
+    max_parallel: 3
+  codegen:
+    enabled: true
+    model: claude-sonnet-4
+  review:
+    enabled: true
+    quality_threshold: 0.7
+  issue:
+    enabled: true
+    auto_label: true
+  pr:
+    enabled: true
+    draft_first: true
+  deployment:
+    enabled: true
+    auto_rollback: true
+  test:
+    enabled: true
+    coverage_target: 80
+
+labels:
+  system: miyabi-53
+  auto_assign: true
+
+workflows:
+  ci:
+    on_push: true
+    on_pr: true
+  security:
+    codeql: weekly
+    dependency_review: true
+  maintenance:
+    stale_days: 30
+    dependabot: weekly
+
+notifications:
+  slack: false
+  email: false
