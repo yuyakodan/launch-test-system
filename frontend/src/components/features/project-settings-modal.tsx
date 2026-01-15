@@ -38,7 +38,7 @@ export function ProjectSettingsModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
 
-  const isArchived = project.archivedAt != null;
+  const isArchived = (project as unknown as { archivedAt?: string }).archivedAt != null;
 
   const updateMutation = useMutation({
     mutationFn: (data: { name?: string; description?: string }) =>

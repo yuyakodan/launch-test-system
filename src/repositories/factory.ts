@@ -1,6 +1,10 @@
 /**
  * Repository Factory
  * Provides centralized repository creation with feature flag based switching
+ *
+ * Supports staged D1 to Neon migration per requirements.md section 12:
+ * - tenant-level or run-level switching via Feature Flags
+ * - Repository layer abstracts D1Repository/NeonRepository
  */
 
 import type {
@@ -14,6 +18,14 @@ import type {
   ILpVariantRepository,
   ICreativeVariantRepository,
   IAdCopyRepository,
+  IApprovalRepository,
+  IDecisionRepository,
+  IDeploymentRepository,
+  IAdBundleRepository,
+  IIncidentRepository,
+  IMetaConnectionRepository,
+  IMetaEntityRepository,
+  IFeatureFlagRepository,
   DatabaseType,
   DatabaseFeatureFlag,
 } from './interfaces/index.js';
@@ -29,7 +41,17 @@ import {
   D1LpVariantRepository,
   D1CreativeVariantRepository,
   D1AdCopyRepository,
+  D1ApprovalRepository,
+  D1DecisionRepository,
+  D1DeploymentRepository,
+  D1AdBundleRepository,
+  D1IncidentRepository,
+  D1MetaConnectionRepository,
+  D1MetaEntityRepository,
+  D1FeatureFlagRepository,
 } from './d1/index.js';
+
+import type { DbBackend } from '../types/feature-flags.js';
 
 /**
  * Repository collection interface
@@ -45,6 +67,14 @@ export interface Repositories {
   lpVariant: ILpVariantRepository;
   creativeVariant: ICreativeVariantRepository;
   adCopy: IAdCopyRepository;
+  approval: IApprovalRepository;
+  decision: IDecisionRepository;
+  deployment: IDeploymentRepository;
+  adBundle: IAdBundleRepository;
+  incident: IIncidentRepository;
+  metaConnection: IMetaConnectionRepository;
+  metaEntity: IMetaEntityRepository;
+  featureFlag: IFeatureFlagRepository;
 }
 
 /**
@@ -104,8 +134,7 @@ export class RepositoryFactory {
       case 'd1':
         return this.createD1Repositories();
       case 'neon':
-        // Future: return this.createNeonRepositories();
-        throw new Error('Neon repositories not yet implemented');
+        return this.createNeonRepositories();
       default:
         throw new Error(`Unknown database type: ${dbType}`);
     }
@@ -131,7 +160,37 @@ export class RepositoryFactory {
       lpVariant: new D1LpVariantRepository(db),
       creativeVariant: new D1CreativeVariantRepository(db),
       adCopy: new D1AdCopyRepository(db),
+      approval: new D1ApprovalRepository(db),
+      decision: new D1DecisionRepository(db),
+      deployment: new D1DeploymentRepository(db),
+      adBundle: new D1AdBundleRepository(db),
+      incident: new D1IncidentRepository(db),
+      metaConnection: new D1MetaConnectionRepository(db),
+      metaEntity: new D1MetaEntityRepository(db),
+      featureFlag: new D1FeatureFlagRepository(db),
     };
+  }
+
+  /**
+   * Create Neon repositories
+   * Placeholder for future Neon implementation
+   */
+  private createNeonRepositories(): Repositories {
+    // When Neon is implemented, this will create Neon repositories
+    // For now, throw an error indicating it's not ready
+    throw new Error(
+      'Neon repositories not yet implemented. ' +
+        'Use D1 or wait for Neon migration to be completed.'
+    );
+  }
+
+  /**
+   * Create feature flag repository
+   * Always uses D1 since feature flags control DB selection
+   */
+  createFeatureFlagRepository(): IFeatureFlagRepository {
+    const db = this.requireD1();
+    return new D1FeatureFlagRepository(db);
   }
 
   /**
@@ -205,6 +264,41 @@ export class RepositoryFactory {
   }
 
   /**
+   * Create approval repository
+   */
+  createApprovalRepository(): IApprovalRepository {
+    return this.getDb(() => new D1ApprovalRepository(this.requireD1()));
+  }
+
+  /**
+   * Create decision repository
+   */
+  createDecisionRepository(): IDecisionRepository {
+    return this.getDb(() => new D1DecisionRepository(this.requireD1()));
+  }
+
+  /**
+   * Create incident repository
+   */
+  createIncidentRepository(): IIncidentRepository {
+    return this.getDb(() => new D1IncidentRepository(this.requireD1()));
+  }
+
+  /**
+   * Create meta connection repository
+   */
+  createMetaConnectionRepository(): IMetaConnectionRepository {
+    return this.getDb(() => new D1MetaConnectionRepository(this.requireD1()));
+  }
+
+  /**
+   * Create meta entity repository
+   */
+  createMetaEntityRepository(): IMetaEntityRepository {
+    return this.getDb(() => new D1MetaEntityRepository(this.requireD1()));
+  }
+
+  /**
    * Get repository based on database type
    */
   private getDb<T>(d1Factory: () => T): T {
@@ -256,5 +350,57 @@ export function createRepositoryFactory(env: {
  */
 export function createD1Repositories(db: D1Database): Repositories {
   const factory = new RepositoryFactory({ d1: db });
+  return factory.createRepositories();
+}
+
+/**
+ * Create repositories based on tenant's feature flag
+ * This is the main entry point for feature-flag-based repository switching
+ */
+export async function createRepositoriesForTenant(
+  d1: D1Database,
+  tenantId: string
+): Promise<Repositories> {
+  // Feature flags are always read from D1
+  const featureFlagRepo = new D1FeatureFlagRepository(d1);
+  const flag = await featureFlagRepo.findByTenantAndKey(tenantId, 'db_backend');
+
+  let dbBackend: DbBackend = 'd1';
+  if (flag) {
+    try {
+      dbBackend = JSON.parse(flag.valueJson) as DbBackend;
+    } catch {
+      // Use default on parse error
+    }
+  }
+
+  const featureFlag: DatabaseFeatureFlag = {
+    dbType: dbBackend,
+    migrationPhase: 'complete',
+  };
+
+  const factory = new RepositoryFactory({
+    d1,
+    featureFlag,
+  });
+
+  return factory.createRepositories();
+}
+
+/**
+ * Create repositories for a specific database backend
+ * Useful for migration scenarios where you need both D1 and Neon repos
+ */
+export function createRepositoriesForBackend(d1: D1Database, backend: DbBackend): Repositories {
+  const featureFlag: DatabaseFeatureFlag = {
+    dbType: backend,
+    migrationPhase: 'complete',
+  };
+
+  const factory = new RepositoryFactory({
+    d1,
+    featureFlag,
+  });
+
   return factory.createRepositories();
 }

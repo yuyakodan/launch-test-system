@@ -79,9 +79,10 @@ export function ProjectListPage() {
               </TableHeader>
               <TableBody>
                 {projects.map((project) => {
-                  const createdAt = project.created_at ?? project.createdAt;
+                  const createdAt = project.created_at;
                   // archivedAtがnull/undefinedならアクティブ、それ以外はアーカイブ
-                  const isActive = project.archivedAt == null && (project.status == null || ['active', 'Active'].includes(project.status));
+                  const archivedAt = (project as unknown as { archivedAt?: string }).archivedAt;
+                  const isActive = archivedAt == null && (project.status == null || ['active', 'Active'].includes(project.status));
                   return (
                     <TableRow key={project.id}>
                       <TableCell>

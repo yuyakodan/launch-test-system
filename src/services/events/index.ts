@@ -12,3 +12,8 @@ export {
   extractDomain,
   normalizeUrl,
 } from './utm-parser.js';
+export {
+  createEventRoutes,
+  createEventRoutesFromEnv,
+} from './routes.js';
+export type { EventRoutesConfig, EventRoutesEnv } from './routes.js';

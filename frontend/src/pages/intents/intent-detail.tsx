@@ -95,11 +95,11 @@ export function IntentDetailPage() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{intent.name ?? intent.title}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{intent.name ?? (intent as unknown as { title?: string }).title}</h1>
             <Badge variant="outline">{intent.status}</Badge>
           </div>
-          {(intent.description ?? intent.hypothesis) && (
-            <p className="text-muted-foreground mt-2">{intent.description ?? intent.hypothesis}</p>
+          {(intent.description ?? (intent as unknown as { hypothesis?: string }).hypothesis) && (
+            <p className="text-muted-foreground mt-2">{intent.description ?? (intent as unknown as { hypothesis?: string }).hypothesis}</p>
           )}
         </div>
       </div>
@@ -113,7 +113,7 @@ export function IntentDetailPage() {
           <dl className="grid gap-4 md:grid-cols-3">
             <div>
               <dt className="text-sm text-muted-foreground">ターゲット/仮説</dt>
-              <dd className="mt-1 font-medium">{intent.target_audience ?? intent.hypothesis ?? '-'}</dd>
+              <dd className="mt-1 font-medium">{intent.target_audience ?? (intent as unknown as { hypothesis?: string }).hypothesis ?? '-'}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">キーメッセージ</dt>
@@ -121,7 +121,7 @@ export function IntentDetailPage() {
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">CTA / 優先度</dt>
-              <dd className="mt-1 font-medium">{intent.cta ?? (intent.priority !== undefined ? `優先度: ${intent.priority}` : '-')}</dd>
+              <dd className="mt-1 font-medium">{intent.cta ?? ((intent as unknown as { priority?: number }).priority !== undefined ? `優先度: ${(intent as unknown as { priority?: number }).priority}` : '-')}</dd>
             </div>
           </dl>
         </CardContent>

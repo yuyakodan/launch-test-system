@@ -26,6 +26,9 @@ export interface Env {
   // Optional feature flags
   DB_TYPE?: string;
   DB_MIGRATION_PHASE?: string;
+
+  // LP Publishing
+  LP_BASE_URL?: string;
 }
 
 /**

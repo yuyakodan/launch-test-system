@@ -152,6 +152,7 @@ export type AuditAction =
   | 'approve'
   | 'reject'
   | 'publish'
+  | 'rollback'
   | 'archive'
   | 'launch'
   | 'pause'
@@ -159,7 +160,22 @@ export type AuditAction =
   | 'stop'
   | 'complete'
   | 'login'
-  | 'logout';
+  | 'logout'
+  | 'stop_rules_evaluate'
+  | 'stop_rules_evaluate_internal'
+  | 'generate'
+  | 'retry'
+  | 'decision.finalize'
+  | 'generate_next_run'
+  | 'resolve'
+  | 'cancel'
+  | 'resend'
+  | 'import'
+  | 'feature_flag.update'
+  | 'feature_flag.reset'
+  | 'meta.oauth.start'
+  | 'meta.oauth.complete'
+  | 'meta.connection.revoke';
 
 /**
  * Audit log entry input

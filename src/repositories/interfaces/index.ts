@@ -77,3 +77,115 @@ export type {
   UpdateAdCopyInput,
   AdCopyFilter,
 } from './variant.js';
+
+// Deployment
+export type {
+  IDeploymentRepository,
+  CreateDeploymentInput,
+  UpdateDeploymentInput,
+  DeploymentFilter,
+} from './deployment.js';
+
+// Ad Bundle
+export type {
+  IAdBundleRepository,
+  CreateAdBundleInput,
+  UpdateAdBundleInput,
+  AdBundleFilter,
+} from './ad-bundle.js';
+
+// Approval
+export type {
+  IApprovalRepository,
+  CreateApprovalInput,
+  ApproveApprovalInput,
+  RejectApprovalInput,
+  ApprovalFilter,
+} from './approval.js';
+
+// Events
+export type {
+  IEventRepository,
+  CreateEventInput,
+  EventFilter,
+  BatchInsertResult,
+  EventAggregation,
+} from './event.js';
+
+// Decision
+export type {
+  IDecisionRepository,
+  CreateDecisionInput,
+  UpdateDecisionInput,
+  DecisionFilter,
+} from './decision.js';
+
+// Incident
+export type {
+  IIncidentRepository,
+  CreateIncidentInput,
+  UpdateIncidentInput,
+  IncidentFilter,
+} from './incident.js';
+
+// Feature Flags
+export type {
+  IFeatureFlagRepository,
+  CreateFeatureFlagInput,
+  UpdateFeatureFlagInput,
+  FeatureFlagFilter,
+} from './feature-flags.js';
+
+// Meta Connection
+export type {
+  IMetaConnectionRepository,
+  CreateMetaConnectionInput,
+  UpdateMetaConnectionInput,
+  MetaConnectionFilter,
+} from './meta-connection.js';
+
+// Meta Entity
+export type {
+  IMetaEntityRepository,
+  CreateMetaEntityInput,
+  UpdateMetaEntityInput,
+  MetaEntityFilter,
+} from './meta-entity.js';
+
+// Manual Import
+export type {
+  IManualImportRepository,
+  CreateManualImportInput,
+  UpdateManualImportInput,
+  ManualImportFilter,
+} from './manual-import.js';
+
+// Insights
+export type {
+  IInsightsHourlyRepository,
+  IInsightsDailyRepository,
+  InsightMetrics,
+  UpsertInsightHourlyInput,
+  UpsertInsightDailyInput,
+  InsightFilter,
+  AggregatedInsightMetrics,
+} from './insights.js';
+
+// Job
+export type {
+  IJobRepository,
+  CreateJobInput,
+  UpdateJobInput,
+  JobFilter,
+  JobStats,
+} from './job.js';
+
+// Notification
+export type {
+  INotificationRepository,
+  CreateNotificationInput,
+  UpdateNotificationInput,
+  NotificationFilter,
+  NotificationEventType,
+  NotificationStats,
+} from './notification.js';

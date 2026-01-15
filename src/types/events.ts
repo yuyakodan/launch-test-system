@@ -102,6 +102,24 @@ export interface EventBatchResponse {
 }
 
 /**
+ * Simplified batch response format per requirements spec
+ * Used for POST /e/batch endpoint
+ */
+export interface EventIngestResponse {
+  /** Whether operation succeeded */
+  ok: boolean;
+
+  /** Number of events successfully ingested */
+  ingested: number;
+
+  /** Number of events skipped due to deduplication */
+  deduped: number;
+
+  /** Optional error message */
+  error?: string;
+}
+
+/**
  * Parsed UTM parameters from page URL
  */
 export interface ParsedUtmParams {
