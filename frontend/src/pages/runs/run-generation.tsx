@@ -32,11 +32,11 @@ import {
 import type { Job, JobStatus } from '@/types';
 
 const jobStatusLabels: Record<JobStatus, { label: string; color: string }> = {
-  queued: { label: 'Queued', color: 'bg-gray-100 text-gray-800' },
-  running: { label: 'Running', color: 'bg-blue-100 text-blue-800' },
-  succeeded: { label: 'Succeeded', color: 'bg-green-100 text-green-800' },
-  failed: { label: 'Failed', color: 'bg-red-100 text-red-800' },
-  cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800' },
+  queued: { label: '待機中', color: 'bg-gray-100 text-gray-800' },
+  running: { label: '実行中', color: 'bg-blue-100 text-blue-800' },
+  succeeded: { label: '成功', color: 'bg-green-100 text-green-800' },
+  failed: { label: '失敗', color: 'bg-red-100 text-red-800' },
+  cancelled: { label: 'キャンセル', color: 'bg-gray-100 text-gray-800' },
 };
 
 const JobStatusIcon = ({ status }: { status: JobStatus }) => {
@@ -123,15 +123,15 @@ export function RunGenerationPage() {
   });
 
   if (runLoading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading...</div>;
+    return <div className="text-center py-8 text-muted-foreground">読み込み中...</div>;
   }
 
   if (!run) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">Run not found</p>
+        <p className="text-muted-foreground">Runが見つかりません</p>
         <Button className="mt-4" onClick={() => navigate('/runs')}>
-          Back to Runs
+          Run一覧に戻る
         </Button>
       </div>
     );
@@ -154,21 +154,21 @@ export function RunGenerationPage() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate(`/runs/${id}`)}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Run
+        Runに戻る
       </Button>
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Generate Content</h1>
+        <h1 className="text-3xl font-bold tracking-tight">コンテンツ生成</h1>
         <p className="text-muted-foreground mt-2">
-          Generate LP, Banner, and Ad Copy for {run.name}
+          {run.name}のLP・バナー・広告文を生成
         </p>
       </div>
 
       {/* Generation Controls */}
       <Card>
         <CardHeader>
-          <CardTitle>Generation Options</CardTitle>
-          <CardDescription>Select what to generate for each intent</CardDescription>
+          <CardTitle>生成オプション</CardTitle>
+          <CardDescription>各訴求に対して生成する内容を選択</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-3">
@@ -186,13 +186,13 @@ export function RunGenerationPage() {
                 />
                 <label htmlFor="generate-lp" className="flex items-center gap-2 font-medium">
                   <FileText className="h-5 w-5" />
-                  Landing Pages
+                  ランディングページ
                 </label>
               </div>
               {generateOptions.lp && (
                 <div className="ml-7">
                   <label className="text-sm text-muted-foreground">
-                    Variants per intent
+                    訴求あたりのバリエーション数
                   </label>
                   <input
                     type="number"
@@ -225,13 +225,13 @@ export function RunGenerationPage() {
                 />
                 <label htmlFor="generate-banner" className="flex items-center gap-2 font-medium">
                   <Image className="h-5 w-5" />
-                  Banners
+                  バナー
                 </label>
               </div>
               {generateOptions.banner && (
                 <div className="ml-7">
                   <label className="text-sm text-muted-foreground">
-                    Variants per intent (per size)
+                    訴求あたりのバリエーション数（サイズ別）
                   </label>
                   <input
                     type="number"
@@ -264,13 +264,13 @@ export function RunGenerationPage() {
                 />
                 <label htmlFor="generate-adcopy" className="flex items-center gap-2 font-medium">
                   <MessageSquare className="h-5 w-5" />
-                  Ad Copies
+                  広告文
                 </label>
               </div>
               {generateOptions.adCopy && (
                 <div className="ml-7">
                   <label className="text-sm text-muted-foreground">
-                    Variants per intent
+                    訴求あたりのバリエーション数
                   </label>
                   <input
                     type="number"
@@ -292,7 +292,7 @@ export function RunGenerationPage() {
 
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {intents.length} intents selected
+              {intents.length}件の訴求を選択中
             </div>
             <Button
               onClick={() => generateMutation.mutate()}
@@ -307,7 +307,7 @@ export function RunGenerationPage() {
               ) : (
                 <Play className="mr-2 h-4 w-4" />
               )}
-              Start Generation
+              生成開始
             </Button>
           </div>
         </CardContent>
@@ -319,7 +319,7 @@ export function RunGenerationPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Loader2 className="h-5 w-5 animate-spin" />
-              Active Jobs
+              実行中のジョブ
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -334,7 +334,7 @@ export function RunGenerationPage() {
                     <div>
                       <p className="font-medium">{job.job_type}</p>
                       <p className="text-sm text-muted-foreground">
-                        Started: {new Date(job.created_at).toLocaleString()}
+                        開始: {new Date(job.created_at).toLocaleString('ja-JP')}
                       </p>
                     </div>
                   </div>
@@ -349,7 +349,7 @@ export function RunGenerationPage() {
                         onClick={() => cancelJobMutation.mutate(job.id)}
                         disabled={cancelJobMutation.isPending}
                       >
-                        Cancel
+                        キャンセル
                       </Button>
                     )}
                   </div>
@@ -363,25 +363,25 @@ export function RunGenerationPage() {
       {/* Job History */}
       <Card>
         <CardHeader>
-          <CardTitle>Generation History</CardTitle>
-          <CardDescription>Past generation jobs and their results</CardDescription>
+          <CardTitle>生成履歴</CardTitle>
+          <CardDescription>過去の生成ジョブと結果</CardDescription>
         </CardHeader>
         <CardContent>
           {jobsLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading jobs...</div>
+            <div className="text-center py-8 text-muted-foreground">ジョブを読み込み中...</div>
           ) : jobs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No generation jobs yet. Start one above.
+              生成ジョブがありません。上のボタンから開始してください。
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Results</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>ステータス</TableHead>
+                  <TableHead>種類</TableHead>
+                  <TableHead>作成日時</TableHead>
+                  <TableHead>結果</TableHead>
+                  <TableHead>アクション</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -398,22 +398,22 @@ export function RunGenerationPage() {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{job.job_type}</TableCell>
-                      <TableCell>{new Date(job.created_at).toLocaleString()}</TableCell>
+                      <TableCell>{new Date(job.created_at).toLocaleString('ja-JP')}</TableCell>
                       <TableCell>
                         {job.status === 'succeeded' ? (
                           <div className="text-sm space-y-1">
                             {result?.lpVariants && (
-                              <p>{result.lpVariants.length} LP variants</p>
+                              <p>{result.lpVariants.length}件のLPバリアント</p>
                             )}
                             {result?.creativeVariants && (
-                              <p>{result.creativeVariants.length} banners</p>
+                              <p>{result.creativeVariants.length}件のバナー</p>
                             )}
                             {result?.adCopies && (
-                              <p>{result.adCopies.length} ad copies</p>
+                              <p>{result.adCopies.length}件の広告文</p>
                             )}
                           </div>
                         ) : job.status === 'failed' ? (
-                          <span className="text-sm text-red-600">{job.last_error || 'Unknown error'}</span>
+                          <span className="text-sm text-red-600">{job.last_error || '不明なエラー'}</span>
                         ) : (
                           '-'
                         )}
@@ -427,7 +427,7 @@ export function RunGenerationPage() {
                             disabled={retryJobMutation.isPending}
                           >
                             <RefreshCw className="mr-2 h-4 w-4" />
-                            Retry
+                            リトライ
                           </Button>
                         )}
                       </TableCell>
@@ -444,56 +444,56 @@ export function RunGenerationPage() {
       {completedJobs.some((j) => j.status === 'succeeded') && (
         <Card>
           <CardHeader>
-            <CardTitle>Generated Content</CardTitle>
-            <CardDescription>Preview and edit generated content</CardDescription>
+            <CardTitle>生成されたコンテンツ</CardTitle>
+            <CardDescription>生成されたコンテンツのプレビューと編集</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium flex items-center gap-2 mb-3">
                   <FileText className="h-4 w-4" />
-                  Landing Pages
+                  ランディングページ
                 </h4>
                 <p className="text-2xl font-bold">
                   {completedJobs
                     .filter((j) => j.status === 'succeeded')
                     .reduce((acc, j) => acc + (getJobResult(j)?.lpVariants?.length || 0), 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">variants generated</p>
+                <p className="text-sm text-muted-foreground">件のバリアントを生成</p>
                 <Button variant="outline" className="w-full mt-3" onClick={() => navigate(`/runs/${id}/lp-editor`)}>
-                  Edit LPs
+                  LPを編集
                 </Button>
               </div>
 
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium flex items-center gap-2 mb-3">
                   <Image className="h-4 w-4" />
-                  Banners
+                  バナー
                 </h4>
                 <p className="text-2xl font-bold">
                   {completedJobs
                     .filter((j) => j.status === 'succeeded')
                     .reduce((acc, j) => acc + (getJobResult(j)?.creativeVariants?.length || 0), 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">variants generated</p>
+                <p className="text-sm text-muted-foreground">件のバリアントを生成</p>
                 <Button variant="outline" className="w-full mt-3" onClick={() => navigate(`/runs/${id}/creative-editor`)}>
-                  Edit Banners
+                  バナーを編集
                 </Button>
               </div>
 
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium flex items-center gap-2 mb-3">
                   <MessageSquare className="h-4 w-4" />
-                  Ad Copies
+                  広告文
                 </h4>
                 <p className="text-2xl font-bold">
                   {completedJobs
                     .filter((j) => j.status === 'succeeded')
                     .reduce((acc, j) => acc + (getJobResult(j)?.adCopies?.length || 0), 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">variants generated</p>
+                <p className="text-sm text-muted-foreground">件のバリアントを生成</p>
                 <Button variant="outline" className="w-full mt-3" onClick={() => navigate(`/runs/${id}/intents`)}>
-                  Edit Ad Copies
+                  広告文を編集
                 </Button>
               </div>
             </div>

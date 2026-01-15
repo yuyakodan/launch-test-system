@@ -40,22 +40,22 @@ import type { ConfidenceLevel } from '@/types';
 
 const confidenceConfig: Record<ConfidenceLevel, { label: string; color: string; bgColor: string; description: string }> = {
   insufficient: {
-    label: 'Insufficient',
+    label: '不十分',
     color: 'text-red-600',
     bgColor: 'bg-red-100',
-    description: 'Not enough data to draw conclusions. More samples needed.',
+    description: '結論を出すにはデータが不足しています。サンプル数を増やす必要があります。',
   },
   directional: {
-    label: 'Directional',
+    label: '傾向あり',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-100',
-    description: 'Shows a trend but not statistically significant. Use with caution.',
+    description: '傾向は見られますが、統計的に有意ではありません。慎重に判断してください。',
   },
   confident: {
-    label: 'Confident',
+    label: '確信あり',
     color: 'text-green-600',
     bgColor: 'bg-green-100',
-    description: 'Statistically significant results. High confidence in winner.',
+    description: '統計的に有意な結果です。勝者に高い信頼性があります。',
   },
 };
 
@@ -109,15 +109,15 @@ export function RunReportPage() {
   });
 
   if (runLoading || reportLoading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading...</div>;
+    return <div className="text-center py-8 text-muted-foreground">読み込み中...</div>;
   }
 
   if (!run || !reportData) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">Report not available</p>
+        <p className="text-muted-foreground">レポートが利用できません</p>
         <Button className="mt-4" onClick={() => navigate(`/runs/${id}`)}>
-          Back to Run
+          Runに戻る
         </Button>
       </div>
     );
@@ -143,23 +143,23 @@ export function RunReportPage() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate(`/runs/${id}`)}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Run
+        Runに戻る
       </Button>
 
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Run Report</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Runレポート</h1>
           <p className="text-muted-foreground mt-2">{run.name}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => reportApi.exportCsv(id!)}>
             <Download className="mr-2 h-4 w-4" />
-            Export CSV
+            CSV出力
           </Button>
           <Button variant="outline" onClick={() => reportApi.exportPdf(id!)}>
             <Download className="mr-2 h-4 w-4" />
-            Export PDF
+            PDF出力
           </Button>
         </div>
       </div>
@@ -198,7 +198,7 @@ export function RunReportPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Trophy className="h-6 w-6 text-yellow-500" />
-              <CardTitle>Winner</CardTitle>
+              <CardTitle>勝者</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -219,15 +219,15 @@ export function RunReportPage() {
             <div className="grid gap-4 md:grid-cols-4 mt-6">
               <div className="text-center p-4 bg-gray-50 rounded">
                 <div className="text-2xl font-bold">{winnerVariant.impressions.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Impressions</div>
+                <div className="text-sm text-muted-foreground">インプレッション</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded">
                 <div className="text-2xl font-bold">{winnerVariant.clicks.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Clicks</div>
+                <div className="text-sm text-muted-foreground">クリック</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded">
                 <div className="text-2xl font-bold">{winnerVariant.conversions.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Conversions</div>
+                <div className="text-sm text-muted-foreground">コンバージョン</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded">
                 <div className="text-2xl font-bold">{winnerVariant.cpa.toLocaleString()} JPY</div>
@@ -241,20 +241,20 @@ export function RunReportPage() {
       {/* Performance Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Variant Performance</CardTitle>
-          <CardDescription>Detailed metrics for each variant</CardDescription>
+          <CardTitle>バリアント別パフォーマンス</CardTitle>
+          <CardDescription>各バリアントの詳細な指標</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rank</TableHead>
-                <TableHead>Variant</TableHead>
-                <TableHead>Intent</TableHead>
-                <TableHead className="text-right">Impressions</TableHead>
-                <TableHead className="text-right">Clicks</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead className="text-right">CVs</TableHead>
+                <TableHead>順位</TableHead>
+                <TableHead>バリアント</TableHead>
+                <TableHead>訴求</TableHead>
+                <TableHead className="text-right">インプレッション</TableHead>
+                <TableHead className="text-right">クリック</TableHead>
+                <TableHead className="text-right">コスト</TableHead>
+                <TableHead className="text-right">CV</TableHead>
                 <TableHead className="text-right">CVR</TableHead>
                 <TableHead className="text-right">CPA</TableHead>
               </TableRow>
@@ -287,7 +287,7 @@ export function RunReportPage() {
               ))}
               {/* Totals Row */}
               <TableRow className="bg-gray-100 font-bold">
-                <TableCell colSpan={3}>Total</TableCell>
+                <TableCell colSpan={3}>合計</TableCell>
                 <TableCell className="text-right">{totals.impressions.toLocaleString()}</TableCell>
                 <TableCell className="text-right">{totals.clicks.toLocaleString()}</TableCell>
                 <TableCell className="text-right">{totals.cost.toLocaleString()} JPY</TableCell>
@@ -307,16 +307,16 @@ export function RunReportPage() {
       {/* Statistical Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Statistical Analysis</CardTitle>
+          <CardTitle>統計分析</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <h4 className="font-medium mb-4">Sample Size Progress</h4>
+              <h4 className="font-medium mb-4">サンプルサイズ進捗</h4>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Total Samples</span>
+                    <span>合計サンプル数</span>
                     <span>{statistics?.totalSamples?.toLocaleString() || 0}</span>
                   </div>
                   <Progress
@@ -328,7 +328,7 @@ export function RunReportPage() {
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Total Conversions</span>
+                    <span>合計コンバージョン数</span>
                     <span>{statistics?.totalConversions?.toLocaleString() || 0}</span>
                   </div>
                   <Progress
@@ -341,31 +341,33 @@ export function RunReportPage() {
               </div>
             </div>
             <div>
-              <h4 className="font-medium mb-4">To Reach Confident Level</h4>
+              <h4 className="font-medium mb-4">確信レベルに到達するまで</h4>
               {confidence === 'confident' ? (
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
-                  <AlertTitle>Sufficient Data</AlertTitle>
+                  <AlertTitle>十分なデータ</AlertTitle>
                   <AlertDescription>
-                    You have enough data to make a confident decision.
+                    確信を持って判断を下すのに十分なデータがあります。
                   </AlertDescription>
                 </Alert>
               ) : (
                 <div className="space-y-2 text-sm">
                   <p>
+                    あと
                     <strong>
                       {Math.max(0, (statistics?.requiredSamplesForConfident || 0) - (statistics?.totalSamples || 0)).toLocaleString()}
-                    </strong>{' '}
-                    more samples needed
+                    </strong>
+                    サンプルが必要
                   </p>
                   <p>
+                    あと
                     <strong>
                       {Math.max(0, (statistics?.requiredConversionsForConfident || 0) - (statistics?.totalConversions || 0)).toLocaleString()}
-                    </strong>{' '}
-                    more conversions needed
+                    </strong>
+                    コンバージョンが必要
                   </p>
                   <p className="text-muted-foreground mt-4">
-                    {statistics?.message || 'Continue running the test to gather more data.'}
+                    {statistics?.message || 'テストを継続してデータを収集してください。'}
                   </p>
                 </div>
               )}
@@ -378,7 +380,7 @@ export function RunReportPage() {
       {recommendations && recommendations.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recommendations</CardTitle>
+            <CardTitle>推奨アクション</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
@@ -396,7 +398,7 @@ export function RunReportPage() {
       {/* Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Actions</CardTitle>
+          <CardTitle>アクション</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-4">
           {!(decision as unknown as { confirmed?: boolean })?.confirmed ? (
@@ -405,14 +407,14 @@ export function RunReportPage() {
               disabled={confidence === 'insufficient'}
             >
               <CheckCircle className="mr-2 h-4 w-4" />
-              Confirm Decision
+              判定を確定
             </Button>
           ) : (
-            <Badge className="bg-green-100 text-green-800">Decision Confirmed</Badge>
+            <Badge className="bg-green-100 text-green-800">判定確定済み</Badge>
           )}
           <Button variant="outline" onClick={() => setShowNextRunDialog(true)}>
             <ArrowRight className="mr-2 h-4 w-4" />
-            Generate Next Run
+            次のRunを生成
           </Button>
         </CardContent>
       </Card>
@@ -421,32 +423,32 @@ export function RunReportPage() {
       <Dialog open={showConfirmDecisionDialog} onClose={() => setShowConfirmDecisionDialog(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Decision</DialogTitle>
+            <DialogTitle>判定を確定</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              This will finalize the winner as:{' '}
+              勝者を確定します:{' '}
               <strong>{winnerVariant?.variantName || 'N/A'}</strong>
             </p>
             <div>
-              <label className="text-sm font-medium">Rationale (optional)</label>
+              <label className="text-sm font-medium">理由（任意）</label>
               <Textarea
                 value={decisionRationale}
                 onChange={(e) => setDecisionRationale(e.target.value)}
-                placeholder="Add notes about this decision..."
+                placeholder="この判定についてのメモを追加..."
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowConfirmDecisionDialog(false)}>
-              Cancel
+              キャンセル
             </Button>
             <Button
               onClick={() => confirmDecisionMutation.mutate()}
               disabled={confirmDecisionMutation.isPending}
             >
-              Confirm
+              確定
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -456,18 +458,18 @@ export function RunReportPage() {
       <Dialog open={showNextRunDialog} onClose={() => setShowNextRunDialog(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Generate Next Run</DialogTitle>
+            <DialogTitle>次のRunを生成</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              A new run will be created based on the fixed/explore settings of this run.
+              このRunの固定/探索設定に基づいて新しいRunが作成されます。
             </p>
             {nextRunSuggestions && (
               <div className="space-y-2">
-                <h4 className="font-medium">Suggestions</h4>
+                <h4 className="font-medium">提案</h4>
                 <div className="grid gap-2 md:grid-cols-2">
                   <div>
-                    <h5 className="text-sm font-medium">Fixed Elements</h5>
+                    <h5 className="text-sm font-medium">固定要素</h5>
                     <ul className="text-sm text-muted-foreground">
                       {nextRunSuggestions.fixedElements.map((el, i) => (
                         <li key={i}>{el}</li>
@@ -475,7 +477,7 @@ export function RunReportPage() {
                     </ul>
                   </div>
                   <div>
-                    <h5 className="text-sm font-medium">Explore Elements</h5>
+                    <h5 className="text-sm font-medium">探索要素</h5>
                     <ul className="text-sm text-muted-foreground">
                       {nextRunSuggestions.exploreElements.map((el, i) => (
                         <li key={i}>{el}</li>
@@ -491,13 +493,13 @@ export function RunReportPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNextRunDialog(false)}>
-              Cancel
+              キャンセル
             </Button>
             <Button
               onClick={() => generateNextRunMutation.mutate()}
               disabled={generateNextRunMutation.isPending}
             >
-              Generate
+              生成
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -32,14 +32,14 @@ import {
 import type { LpBlockType, LpBlock, QAResult } from '@/types';
 
 const blockTypes: { type: LpBlockType; label: string; description: string }[] = [
-  { type: 'fv', label: 'First View', description: 'Hero section with main headline and CTA' },
-  { type: 'empathy', label: 'Empathy', description: 'Problem statement and user pain points' },
-  { type: 'solution', label: 'Solution', description: 'Product/service solution overview' },
-  { type: 'proof', label: 'Proof', description: 'Evidence, testimonials, statistics' },
-  { type: 'steps', label: 'Steps', description: 'How it works / process steps' },
-  { type: 'faq', label: 'FAQ', description: 'Frequently asked questions' },
-  { type: 'cta', label: 'CTA', description: 'Call to action section' },
-  { type: 'disclaimer', label: 'Disclaimer', description: 'Legal disclaimers and notes' },
+  { type: 'fv', label: 'ファーストビュー', description: 'メインの見出しとCTAを含むヒーローセクション' },
+  { type: 'empathy', label: '共感', description: '課題提起とユーザーの悩み' },
+  { type: 'solution', label: '解決策', description: '製品/サービスによる解決策の概要' },
+  { type: 'proof', label: '証明', description: '実績、お客様の声、統計データ' },
+  { type: 'steps', label: 'ステップ', description: '利用方法/プロセスの説明' },
+  { type: 'faq', label: 'よくある質問', description: 'よくある質問と回答' },
+  { type: 'cta', label: 'CTA', description: '行動喚起セクション' },
+  { type: 'disclaimer', label: '免責事項', description: '法的な免責事項と注意書き' },
 ];
 
 const getBlockTypeInfo = (type: LpBlockType) => {
@@ -205,14 +205,14 @@ export function LpEditorPage() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate(`/runs/${id}`)}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Run
+        Runに戻る
       </Button>
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">LP Editor</h1>
+          <h1 className="text-3xl font-bold tracking-tight">LPエディタ</h1>
           <p className="text-muted-foreground mt-2">
-            Edit landing page blocks for {run?.name}
+            {run?.name}のランディングページブロックを編集
           </p>
         </div>
         <div className="flex gap-2">
@@ -221,14 +221,14 @@ export function LpEditorPage() {
             onClick={() => setShowPreview(!showPreview)}
           >
             <Eye className="mr-2 h-4 w-4" />
-            {showPreview ? 'Hide Preview' : 'Preview'}
+            {showPreview ? 'プレビューを閉じる' : 'プレビュー'}
           </Button>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={!hasChanges || saveMutation.isPending}
           >
             <Save className="mr-2 h-4 w-4" />
-            Save Changes
+            変更を保存
           </Button>
         </div>
       </div>
@@ -238,12 +238,12 @@ export function LpEditorPage() {
         <CardContent className="pt-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label>Intent</Label>
+              <Label>訴求</Label>
               <Select
                 value={selectedIntentId || ''}
                 onChange={(e) => handleIntentChange(e.target.value)}
               >
-                <SelectOption value="">Select an intent...</SelectOption>
+                <SelectOption value="">訴求を選択...</SelectOption>
                 {intents.map((intent) => (
                   <SelectOption key={intent.id} value={intent.id}>
                     {intent.name || (intent as { title?: string }).title}
@@ -252,16 +252,16 @@ export function LpEditorPage() {
               </Select>
             </div>
             <div>
-              <Label>LP Variant</Label>
+              <Label>LPバリアント</Label>
               <Select
                 value={selectedVariantId || ''}
                 onChange={(e) => handleVariantChange(e.target.value)}
                 disabled={!selectedIntentId}
               >
-                <SelectOption value="">Select a variant...</SelectOption>
+                <SelectOption value="">バリアントを選択...</SelectOption>
                 {lpVariants.map((variant) => (
                   <SelectOption key={variant.id} value={variant.id}>
-                    {variant.name || `Variant ${variant.id.slice(-6)}`}
+                    {variant.name || `バリアント ${variant.id.slice(-6)}`}
                   </SelectOption>
                 ))}
               </Select>
@@ -279,7 +279,7 @@ export function LpEditorPage() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           )}
           <AlertTitle>
-            QA Result: {hasBlockers ? 'Issues Found' : 'Passed'}
+            QA結果: {hasBlockers ? '問題が見つかりました' : '合格'}
           </AlertTitle>
           <AlertDescription>
             {qaResult.checks?.map((check, i) => (
@@ -296,7 +296,7 @@ export function LpEditorPage() {
           {/* Block Editor */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Blocks</h2>
+              <h2 className="text-xl font-semibold">ブロック</h2>
               <div className="flex gap-2">
                 <Select
                   value=""
@@ -306,7 +306,7 @@ export function LpEditorPage() {
                     }
                   }}
                 >
-                  <SelectOption value="">+ Add Block</SelectOption>
+                  <SelectOption value="">+ ブロックを追加</SelectOption>
                   {blockTypes.map((bt) => (
                     <SelectOption key={bt.type} value={bt.type}>
                       {bt.label}
@@ -318,7 +318,7 @@ export function LpEditorPage() {
                   onClick={() => runQaMutation.mutate()}
                   disabled={runQaMutation.isPending}
                 >
-                  Run QA Check
+                  QAチェック実行
                 </Button>
               </div>
             </div>
@@ -326,7 +326,7 @@ export function LpEditorPage() {
             {editedBlocks.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  No blocks yet. Add blocks using the dropdown above.
+                  ブロックがありません。上のドロップダウンからブロックを追加してください。
                 </CardContent>
               </Card>
             ) : (
@@ -393,7 +393,7 @@ export function LpEditorPage() {
             <div className="sticky top-4">
               <Card className="h-[600px] overflow-auto">
                 <CardHeader>
-                  <CardTitle>Preview</CardTitle>
+                  <CardTitle>プレビュー</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
@@ -413,7 +413,7 @@ export function LpEditorPage() {
       {!selectedVariant && selectedIntentId && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Select an LP variant to start editing
+            編集するLPバリアントを選択してください
           </CardContent>
         </Card>
       )}
@@ -421,7 +421,7 @@ export function LpEditorPage() {
       {!selectedIntentId && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Select an intent to view its LP variants
+            LPバリアントを表示するには訴求を選択してください
           </CardContent>
         </Card>
       )}
@@ -440,27 +440,27 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Headline</Label>
+            <Label>見出し</Label>
             <Input
               value={(content.headline as string) || ''}
               onChange={(e) => updateContent(block.id, 'headline', e.target.value)}
-              placeholder="Main headline..."
+              placeholder="メインの見出し..."
             />
           </div>
           <div>
-            <Label>Subheadline</Label>
+            <Label>サブ見出し</Label>
             <Input
               value={(content.subheadline as string) || ''}
               onChange={(e) => updateContent(block.id, 'subheadline', e.target.value)}
-              placeholder="Supporting text..."
+              placeholder="補足テキスト..."
             />
           </div>
           <div>
-            <Label>CTA Button Text</Label>
+            <Label>CTAボタンテキスト</Label>
             <Input
               value={(content.ctaText as string) || ''}
               onChange={(e) => updateContent(block.id, 'ctaText', e.target.value)}
-              placeholder="e.g., Get Started"
+              placeholder="例: 今すぐ始める"
             />
           </div>
         </div>
@@ -470,19 +470,19 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Title</Label>
+            <Label>タイトル</Label>
             <Input
               value={(content.title as string) || ''}
               onChange={(e) => updateContent(block.id, 'title', e.target.value)}
-              placeholder="Section title..."
+              placeholder="セクションタイトル..."
             />
           </div>
           <div>
-            <Label>Problem Description</Label>
+            <Label>課題の説明</Label>
             <Textarea
               value={(content.description as string) || ''}
               onChange={(e) => updateContent(block.id, 'description', e.target.value)}
-              placeholder="Describe the problem..."
+              placeholder="課題を説明..."
               rows={4}
             />
           </div>
@@ -493,19 +493,19 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Title</Label>
+            <Label>タイトル</Label>
             <Input
               value={(content.title as string) || ''}
               onChange={(e) => updateContent(block.id, 'title', e.target.value)}
-              placeholder="Solution title..."
+              placeholder="解決策のタイトル..."
             />
           </div>
           <div>
-            <Label>Description</Label>
+            <Label>説明</Label>
             <Textarea
               value={(content.description as string) || ''}
               onChange={(e) => updateContent(block.id, 'description', e.target.value)}
-              placeholder="Describe the solution..."
+              placeholder="解決策を説明..."
               rows={4}
             />
           </div>
@@ -516,19 +516,19 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Title</Label>
+            <Label>タイトル</Label>
             <Input
               value={(content.title as string) || ''}
               onChange={(e) => updateContent(block.id, 'title', e.target.value)}
-              placeholder="e.g., Why Trust Us"
+              placeholder="例: 選ばれる理由"
             />
           </div>
           <div>
-            <Label>Evidence Text</Label>
+            <Label>証明テキスト</Label>
             <Textarea
               value={(content.text as string) || ''}
               onChange={(e) => updateContent(block.id, 'text', e.target.value)}
-              placeholder="Statistics, testimonials..."
+              placeholder="統計データ、お客様の声..."
               rows={4}
             />
           </div>
@@ -539,19 +539,19 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Title</Label>
+            <Label>タイトル</Label>
             <Input
               value={(content.title as string) || ''}
               onChange={(e) => updateContent(block.id, 'title', e.target.value)}
-              placeholder="e.g., How It Works"
+              placeholder="例: ご利用の流れ"
             />
           </div>
           <div>
-            <Label>Steps (one per line)</Label>
+            <Label>ステップ（1行に1つ）</Label>
             <Textarea
               value={(content.stepsText as string) || ''}
               onChange={(e) => updateContent(block.id, 'stepsText', e.target.value)}
-              placeholder="Step 1: ...\nStep 2: ...\nStep 3: ..."
+              placeholder="ステップ1: ...\nステップ2: ...\nステップ3: ..."
               rows={4}
             />
           </div>
@@ -562,19 +562,19 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Title</Label>
+            <Label>タイトル</Label>
             <Input
               value={(content.title as string) || ''}
               onChange={(e) => updateContent(block.id, 'title', e.target.value)}
-              placeholder="e.g., Frequently Asked Questions"
+              placeholder="例: よくある質問"
             />
           </div>
           <div>
-            <Label>FAQ Items (Q: and A: format)</Label>
+            <Label>FAQ項目（Q: と A: 形式）</Label>
             <Textarea
               value={(content.faqText as string) || ''}
               onChange={(e) => updateContent(block.id, 'faqText', e.target.value)}
-              placeholder="Q: Question?\nA: Answer.\n\nQ: Another question?\nA: Another answer."
+              placeholder="Q: 質問は？\nA: 回答です。\n\nQ: 別の質問は？\nA: 別の回答です。"
               rows={6}
             />
           </div>
@@ -585,27 +585,27 @@ function renderBlockEditor(
       return (
         <div className="space-y-4">
           <div>
-            <Label>Headline</Label>
+            <Label>見出し</Label>
             <Input
               value={(content.headline as string) || ''}
               onChange={(e) => updateContent(block.id, 'headline', e.target.value)}
-              placeholder="e.g., Ready to Get Started?"
+              placeholder="例: 始める準備はできましたか？"
             />
           </div>
           <div>
-            <Label>Button Text</Label>
+            <Label>ボタンテキスト</Label>
             <Input
               value={(content.buttonText as string) || ''}
               onChange={(e) => updateContent(block.id, 'buttonText', e.target.value)}
-              placeholder="e.g., Start Free Trial"
+              placeholder="例: 無料で始める"
             />
           </div>
           <div>
-            <Label>Note (optional)</Label>
+            <Label>注釈（任意）</Label>
             <Input
               value={(content.note as string) || ''}
               onChange={(e) => updateContent(block.id, 'note', e.target.value)}
-              placeholder="e.g., No credit card required"
+              placeholder="例: クレジットカード不要"
             />
           </div>
         </div>
@@ -614,11 +614,11 @@ function renderBlockEditor(
     case 'disclaimer':
       return (
         <div>
-          <Label>Disclaimer Text</Label>
+          <Label>免責事項テキスト</Label>
           <Textarea
             value={(content.text as string) || ''}
             onChange={(e) => updateContent(block.id, 'text', e.target.value)}
-            placeholder="Legal disclaimer..."
+            placeholder="法的な免責事項..."
             rows={4}
           />
         </div>
@@ -627,7 +627,7 @@ function renderBlockEditor(
     default:
       return (
         <div className="text-muted-foreground">
-          No editor available for this block type
+          このブロックタイプのエディタは利用できません
         </div>
       );
   }
@@ -640,8 +640,8 @@ function renderBlockPreview(block: LpBlock) {
     case 'fv':
       return (
         <div className="text-center py-8 bg-gradient-to-b from-blue-50 to-white rounded">
-          <h1 className="text-2xl font-bold">{content.headline || 'Headline'}</h1>
-          <p className="text-muted-foreground mt-2">{content.subheadline || 'Subheadline'}</p>
+          <h1 className="text-2xl font-bold">{content.headline || '見出し'}</h1>
+          <p className="text-muted-foreground mt-2">{content.subheadline || 'サブ見出し'}</p>
           <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg">
             {content.ctaText || 'CTA'}
           </button>
@@ -651,33 +651,33 @@ function renderBlockPreview(block: LpBlock) {
     case 'empathy':
       return (
         <div className="py-4">
-          <h2 className="text-xl font-semibold">{content.title || 'Empathy Section'}</h2>
-          <p className="mt-2 text-muted-foreground">{content.description || 'Problem description...'}</p>
+          <h2 className="text-xl font-semibold">{content.title || '共感セクション'}</h2>
+          <p className="mt-2 text-muted-foreground">{content.description || '課題の説明...'}</p>
         </div>
       );
 
     case 'solution':
       return (
         <div className="py-4">
-          <h2 className="text-xl font-semibold">{content.title || 'Solution Section'}</h2>
-          <p className="mt-2 text-muted-foreground">{content.description || 'Solution description...'}</p>
+          <h2 className="text-xl font-semibold">{content.title || '解決策セクション'}</h2>
+          <p className="mt-2 text-muted-foreground">{content.description || '解決策の説明...'}</p>
         </div>
       );
 
     case 'proof':
       return (
         <div className="py-4 bg-gray-50 rounded p-4">
-          <h2 className="text-xl font-semibold">{content.title || 'Proof Section'}</h2>
-          <p className="mt-2 text-muted-foreground">{content.text || 'Evidence...'}</p>
+          <h2 className="text-xl font-semibold">{content.title || '証明セクション'}</h2>
+          <p className="mt-2 text-muted-foreground">{content.text || '実績...'}</p>
         </div>
       );
 
     case 'steps':
       return (
         <div className="py-4">
-          <h2 className="text-xl font-semibold">{content.title || 'Steps'}</h2>
+          <h2 className="text-xl font-semibold">{content.title || 'ステップ'}</h2>
           <div className="mt-2 text-muted-foreground whitespace-pre-line">
-            {content.stepsText || 'Steps...'}
+            {content.stepsText || 'ステップ...'}
           </div>
         </div>
       );
@@ -685,9 +685,9 @@ function renderBlockPreview(block: LpBlock) {
     case 'faq':
       return (
         <div className="py-4">
-          <h2 className="text-xl font-semibold">{content.title || 'FAQ'}</h2>
+          <h2 className="text-xl font-semibold">{content.title || 'よくある質問'}</h2>
           <div className="mt-2 text-muted-foreground whitespace-pre-line">
-            {content.faqText || 'FAQ items...'}
+            {content.faqText || 'FAQ項目...'}
           </div>
         </div>
       );
@@ -695,9 +695,9 @@ function renderBlockPreview(block: LpBlock) {
     case 'cta':
       return (
         <div className="text-center py-8 bg-blue-50 rounded">
-          <h2 className="text-xl font-bold">{content.headline || 'CTA Headline'}</h2>
+          <h2 className="text-xl font-bold">{content.headline || 'CTA見出し'}</h2>
           <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg">
-            {content.buttonText || 'Button'}
+            {content.buttonText || 'ボタン'}
           </button>
           {content.note && <p className="mt-2 text-sm text-muted-foreground">{content.note}</p>}
         </div>
@@ -706,11 +706,11 @@ function renderBlockPreview(block: LpBlock) {
     case 'disclaimer':
       return (
         <div className="py-4 text-xs text-muted-foreground">
-          {content.text || 'Disclaimer text...'}
+          {content.text || '免責事項テキスト...'}
         </div>
       );
 
     default:
-      return <div className="text-muted-foreground">Preview not available</div>;
+      return <div className="text-muted-foreground">プレビューは利用できません</div>;
   }
 }

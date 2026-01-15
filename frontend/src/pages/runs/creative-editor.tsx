@@ -28,9 +28,9 @@ import {
 import type { CreativeSize, TextLayer, QAResult } from '@/types';
 
 const SIZES: { value: CreativeSize; label: string; width: number; height: number }[] = [
-  { value: '1:1', label: 'Square (1:1)', width: 400, height: 400 },
-  { value: '4:5', label: 'Portrait (4:5)', width: 320, height: 400 },
-  { value: '9:16', label: 'Story (9:16)', width: 225, height: 400 },
+  { value: '1:1', label: '正方形 (1:1)', width: 400, height: 400 },
+  { value: '4:5', label: '縦長 (4:5)', width: 320, height: 400 },
+  { value: '9:16', label: 'ストーリー (9:16)', width: 225, height: 400 },
 ];
 
 interface CreativeVariantData {
@@ -166,14 +166,14 @@ export function CreativeEditorPage() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate(`/runs/${id}`)}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Run
+        Runに戻る
       </Button>
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Creative Editor</h1>
+          <h1 className="text-3xl font-bold tracking-tight">クリエイティブエディタ</h1>
           <p className="text-muted-foreground mt-2">
-            Edit banners for {run?.name}
+            {run?.name}のバナーを編集
           </p>
         </div>
         <div className="flex gap-2">
@@ -182,14 +182,14 @@ export function CreativeEditorPage() {
             onClick={() => runQaMutation.mutate()}
             disabled={!selectedVariantId || runQaMutation.isPending}
           >
-            Run QA Check
+            QAチェック実行
           </Button>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={!hasChanges || saveMutation.isPending}
           >
             <Save className="mr-2 h-4 w-4" />
-            Save Changes
+            変更を保存
           </Button>
         </div>
       </div>
@@ -199,12 +199,12 @@ export function CreativeEditorPage() {
         <CardContent className="pt-6">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <Label>Intent</Label>
+              <Label>訴求</Label>
               <Select
                 value={selectedIntentId || ''}
                 onChange={(e) => handleIntentChange(e.target.value)}
               >
-                <SelectOption value="">Select an intent...</SelectOption>
+                <SelectOption value="">訴求を選択...</SelectOption>
                 {intents.map((intent) => (
                   <SelectOption key={intent.id} value={intent.id}>
                     {intent.name || (intent as { title?: string }).title}
@@ -213,7 +213,7 @@ export function CreativeEditorPage() {
               </Select>
             </div>
             <div>
-              <Label>Size</Label>
+              <Label>サイズ</Label>
               <div className="flex gap-2">
                 {SIZES.map((size) => (
                   <Button
@@ -232,16 +232,16 @@ export function CreativeEditorPage() {
               </div>
             </div>
             <div>
-              <Label>Variant</Label>
+              <Label>バリアント</Label>
               <Select
                 value={selectedVariantId || ''}
                 onChange={(e) => handleVariantChange(e.target.value)}
                 disabled={!selectedIntentId}
               >
-                <SelectOption value="">Select a variant...</SelectOption>
+                <SelectOption value="">バリアントを選択...</SelectOption>
                 {filteredVariants.map((variant) => (
                   <SelectOption key={variant.id} value={variant.id}>
-                    {variant.name || `Variant ${variant.id.slice(-6)}`}
+                    {variant.name || `バリアント ${variant.id.slice(-6)}`}
                   </SelectOption>
                 ))}
               </Select>
@@ -259,7 +259,7 @@ export function CreativeEditorPage() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           )}
           <AlertTitle>
-            QA Result: {hasBlockers ? 'Issues Found' : 'Passed'}
+            QA結果: {hasBlockers ? '問題が見つかりました' : '合格'}
           </AlertTitle>
           <AlertDescription>
             {qaResult.checks?.map((check, i) => (
@@ -276,7 +276,7 @@ export function CreativeEditorPage() {
           {/* Canvas Preview */}
           <Card>
             <CardHeader>
-              <CardTitle>Preview</CardTitle>
+              <CardTitle>プレビュー</CardTitle>
               <CardDescription>
                 {sizeConfig.width} x {sizeConfig.height}px
               </CardDescription>
@@ -336,17 +336,17 @@ export function CreativeEditorPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Text Layers</CardTitle>
+                  <CardTitle>テキストレイヤー</CardTitle>
                   <Button size="sm" onClick={addLayer}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Layer
+                    レイヤーを追加
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 {editedLayers.length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">
-                    No text layers. Add one to get started.
+                    テキストレイヤーがありません。追加して始めましょう。
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -358,7 +358,7 @@ export function CreativeEditorPage() {
                         }`}
                         onClick={() => setSelectedLayerId(layer.id)}
                       >
-                        <span className="text-sm truncate flex-1">{layer.text || 'Empty'}</span>
+                        <span className="text-sm truncate flex-1">{layer.text || '空'}</span>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -380,11 +380,11 @@ export function CreativeEditorPage() {
             {selectedLayer && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Layer Properties</CardTitle>
+                  <CardTitle>レイヤープロパティ</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label>Text</Label>
+                    <Label>テキスト</Label>
                     <Input
                       value={selectedLayer.text}
                       onChange={(e) => updateLayer(selectedLayer.id, { text: e.target.value })}
@@ -393,7 +393,7 @@ export function CreativeEditorPage() {
 
                   <div className="grid gap-4 grid-cols-2">
                     <div>
-                      <Label>X Position</Label>
+                      <Label>X位置</Label>
                       <Input
                         type="number"
                         value={selectedLayer.x}
@@ -401,7 +401,7 @@ export function CreativeEditorPage() {
                       />
                     </div>
                     <div>
-                      <Label>Y Position</Label>
+                      <Label>Y位置</Label>
                       <Input
                         type="number"
                         value={selectedLayer.y}
@@ -412,7 +412,7 @@ export function CreativeEditorPage() {
 
                   <div className="grid gap-4 grid-cols-2">
                     <div>
-                      <Label>Width</Label>
+                      <Label>幅</Label>
                       <Input
                         type="number"
                         value={selectedLayer.width}
@@ -420,7 +420,7 @@ export function CreativeEditorPage() {
                       />
                     </div>
                     <div>
-                      <Label>Height</Label>
+                      <Label>高さ</Label>
                       <Input
                         type="number"
                         value={selectedLayer.height}
@@ -431,7 +431,7 @@ export function CreativeEditorPage() {
 
                   <div className="grid gap-4 grid-cols-2">
                     <div>
-                      <Label>Font Size</Label>
+                      <Label>フォントサイズ</Label>
                       <Input
                         type="number"
                         value={selectedLayer.fontSize}
@@ -439,20 +439,20 @@ export function CreativeEditorPage() {
                       />
                     </div>
                     <div>
-                      <Label>Font Weight</Label>
+                      <Label>フォントウェイト</Label>
                       <Select
                         value={selectedLayer.fontWeight}
                         onChange={(e) => updateLayer(selectedLayer.id, { fontWeight: e.target.value as 'normal' | 'bold' })}
                       >
-                        <SelectOption value="normal">Normal</SelectOption>
-                        <SelectOption value="bold">Bold</SelectOption>
+                        <SelectOption value="normal">通常</SelectOption>
+                        <SelectOption value="bold">太字</SelectOption>
                       </Select>
                     </div>
                   </div>
 
                   <div className="grid gap-4 grid-cols-2">
                     <div>
-                      <Label>Color</Label>
+                      <Label>色</Label>
                       <div className="flex gap-2">
                         <Input
                           type="color"
@@ -468,14 +468,14 @@ export function CreativeEditorPage() {
                       </div>
                     </div>
                     <div>
-                      <Label>Alignment</Label>
+                      <Label>配置</Label>
                       <Select
                         value={selectedLayer.align}
                         onChange={(e) => updateLayer(selectedLayer.id, { align: e.target.value as 'left' | 'center' | 'right' })}
                       >
-                        <SelectOption value="left">Left</SelectOption>
-                        <SelectOption value="center">Center</SelectOption>
-                        <SelectOption value="right">Right</SelectOption>
+                        <SelectOption value="left">左揃え</SelectOption>
+                        <SelectOption value="center">中央揃え</SelectOption>
+                        <SelectOption value="right">右揃え</SelectOption>
                       </Select>
                     </div>
                   </div>
@@ -489,7 +489,7 @@ export function CreativeEditorPage() {
       {!selectedVariant && selectedIntentId && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Select a variant to start editing
+            編集するバリアントを選択してください
           </CardContent>
         </Card>
       )}
@@ -497,7 +497,7 @@ export function CreativeEditorPage() {
       {!selectedIntentId && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Select an intent to view its creative variants
+            クリエイティブバリアントを表示するには訴求を選択してください
           </CardContent>
         </Card>
       )}
