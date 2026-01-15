@@ -35,7 +35,7 @@ INSERT INTO memberships (tenant_id, user_id, role, status) VALUES
 -- Projects
 -- ---------------------------
 INSERT INTO projects (id, tenant_id, name, offer_json, cv_definition_json, ng_rules_json, form_config_json, default_disclaimer) VALUES
-  ('01HTEST0000PROJECT000001', '01HTEST0000TENANT00000001', 'Sample LP Test Project',
+  ('01HTEST0000PROJECT000001', '01HTEST0000TENANT00000001', 'サンプルLPテストプロジェクト',
    '{"product_name": "Sample Product", "target_audience": "30-40 male business owners", "unique_value": "Time saving automation"}',
    '{"primary_cv": "form_submit", "secondary_cv": ["cta_click"]}',
    '{"version": "1.0", "blocked_terms": ["guaranteed", "100% success"], "blocked_patterns": [], "claim_requires_evidence": [], "required_disclaimer": ["This is a sample disclaimer"]}',
@@ -46,7 +46,7 @@ INSERT INTO projects (id, tenant_id, name, offer_json, cv_definition_json, ng_ru
 -- Runs
 -- ---------------------------
 INSERT INTO runs (id, project_id, name, status, operation_mode, run_design_json, stop_dsl_json, fixed_granularity_json, created_by_user_id) VALUES
-  ('01HTEST0000RUN0000000001', '01HTEST0000PROJECT000001', 'Initial A/B Test Run', 'Draft', 'manual',
+  ('01HTEST0000RUN0000000001', '01HTEST0000PROJECT000001', '初回A/Bテスト', 'Draft', 'manual',
    '{"version": "1.0", "operation_mode": "manual", "kpi": {"primary": "cvr", "secondary": ["cpa"]}, "budget": {"currency": "JPY", "total_cap": 100000, "daily_cap": 10000}, "compare_axis": {"mode": "intent"}, "sample_thresholds": {"insufficient": {"min_total_clicks": 200, "min_total_cvs": 3}, "directional": {"min_total_clicks": 200, "min_total_cvs": 5}, "confident": {"min_total_cvs": 20, "min_per_variant_cvs": 5}}, "confidence_thresholds": {"method": "wilson", "alpha": 0.05, "min_effect": 0.0}, "form_mode": {"type": "internal"}, "utm_policy": {"source": "meta", "medium": "paid_social", "campaign_key": "run_{run_id}", "content_key": "intent_{intent_id}_lp_{lp_variant_id}_cr_{creative_variant_id}"}}',
    '{"version": "1.0", "evaluation_interval_sec": 300, "safe_mode_on_error": true, "rules": [{"id": "cap-total", "enabled": true, "scope": "run", "type": "spend_total_cap", "gating": {"min_elapsed_sec": 0}, "params": {"cap": 100000, "currency": "JPY"}, "action": {"type": "pause_run", "notify": true, "message": "Total budget cap reached"}}]}',
    '{"version": "1.0", "fixed": {"intent": {"lock_intent_ids": []}, "lp": {"lock_structure": false, "lock_theme": false, "lock_blocks": [], "lock_copy_paths": []}, "banner": {"lock_template": false, "lock_image_layout": false, "lock_text_layers": false, "lock_sizes": []}, "ad_copy": {"lock_primary_text": false, "lock_headline": false, "lock_description": false}}, "explore": {"intent": {"max_new_intents": 1, "allow_replace_intents": true}, "lp": {"max_new_fv_copies": 3, "max_new_cta_copies": 2, "allow_block_reorder": false}, "banner": {"max_new_text_variants": 6, "allow_new_templates": true}}}',
