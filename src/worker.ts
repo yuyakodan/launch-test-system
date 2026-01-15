@@ -16,6 +16,22 @@ import { createRunRoutes } from './routes/runs.js';
 import { createIntentRoutes } from './routes/intents.js';
 import { createDecisionRoutes } from './routes/decisions.js';
 import { createVariantRoutes } from './routes/variants.js';
+import { createQaRoutes } from './routes/qa.js';
+import {
+  createStopConditionRoutes,
+  createInternalStopConditionRoutes,
+} from './routes/stop-condition.js';
+import { createGenerationRoutes } from './routes/generation.js';
+import { createReportRoutes } from './routes/report.js';
+import { createApprovalRoutes, createRunApprovalRoutes } from './routes/approvals.js';
+import { createPublishRoutes } from './routes/publish.js';
+import { createNextRunRoutes } from './routes/next-run.js';
+import { createJobRoutes } from './routes/jobs.js';
+import { createNotificationRoutes } from './routes/notifications.js';
+import { createIncidentRoutes } from './routes/incidents.js';
+import { createMetaRoutes, createInternalMetaRoutes } from './routes/meta.js';
+import { createManualRoutes, createRunMetricsRoutes } from './routes/manual.js';
+import { createFeatureFlagsRoutes } from './routes/feature-flags.js';
 
 // Create Hono app with environment bindings
 const app = new Hono<{ Bindings: Env }>();
@@ -142,6 +158,14 @@ api.route('/', createAuthRoutes());
 // PATCH /api/tenant - Update tenant
 api.route('/tenant', createTenantRoutes());
 
+// Mount Feature Flags routes (under /api/tenant/flags)
+// GET /api/tenant/flags - Get all feature flags
+// GET /api/tenant/flags/:key - Get specific flag
+// PATCH /api/tenant/flags/:key - Update flag
+// DELETE /api/tenant/flags/:key - Reset flag to default
+// GET /api/tenant/flags/migration/status - Get migration status
+api.route('/tenant/flags', createFeatureFlagsRoutes());
+
 // Mount Project routes
 // GET /api/projects - List projects
 // POST /api/projects - Create project
@@ -183,6 +207,99 @@ api.route('/', createDecisionRoutes());
 // POST /api/intents/:intentId/ad-copies - Create ad copy
 // PATCH /api/ad-copies/:id - Update ad copy
 api.route('/', createVariantRoutes());
+
+// Mount QA routes
+// POST /api/qa/check - Check content for NG expressions
+// POST /api/qa/smoke-test - Submit smoke test job
+// GET /api/qa/smoke-test/:jobId - Get smoke test result
+// POST /api/qa/smoke-test/:jobId/result - Receive smoke test result (webhook)
+api.route('/qa', createQaRoutes());
+
+// Mount Stop Condition routes (Run-scoped)
+// GET /api/runs/:runId/stop-rules - Get stop rules for a run
+api.route('/', createStopConditionRoutes());
+
+// Mount Internal Stop Condition routes
+// POST /api/internal/stop-rules/evaluate - Evaluate stop rules (Cron/Queue trigger)
+api.route('/internal/stop-rules', createInternalStopConditionRoutes());
+
+// Mount Generation routes
+// POST /api/runs/:runId/generate - Submit generation job
+// GET /api/runs/:runId/jobs - List generation jobs
+// POST /api/jobs/:jobId/retry - Retry failed job
+api.route('/', createGenerationRoutes());
+
+// Mount Report routes
+// GET /api/runs/:runId/report - Get comprehensive report for a run
+// POST /api/internal/report/generate - Generate report job (internal)
+// GET /api/internal/report/job/:jobId - Get report job status
+api.route('/', createReportRoutes());
+
+// Mount Approval routes
+// POST /api/approvals - Create submitted approval (target_hash required)
+// POST /api/approvals/:approvalId/approve - Approve
+// POST /api/approvals/:approvalId/reject - Reject
+api.route('/approvals', createApprovalRoutes());
+
+// Mount Run Approval routes
+// POST /api/runs/:runId/submit-review - Submit run for review
+// GET /api/runs/:runId/approvals - Get run approvals list
+api.route('/runs', createRunApprovalRoutes());
+
+// Mount Publish routes
+// POST /api/runs/:runId/publish - Publish run (generate URLs, UTMs, snapshots, ad bundles)
+// POST /api/runs/:runId/rollback - Rollback a published deployment
+// GET /api/runs/:runId/deployment - Get deployment information
+api.route('/', createPublishRoutes());
+
+// Mount Next Run routes
+// POST /api/runs/:runId/next-run - Generate next run based on fixed/explore settings
+// POST /api/runs/:runId/fixed-granularity - Set fixed granularity configuration
+// GET /api/runs/:runId/fixed-granularity - Get current fixed granularity configuration
+api.route('/runs', createNextRunRoutes());
+
+// Mount Job routes
+// GET /api/jobs - List jobs
+// GET /api/jobs/stats - Get job statistics
+// GET /api/jobs/:id - Get job by ID
+// POST /api/jobs/:id/retry - Retry a failed job
+// POST /api/jobs/:id/cancel - Cancel a queued/running job
+api.route('/jobs', createJobRoutes());
+
+// Mount Notification routes
+// GET /api/notifications - List notifications
+// GET /api/notifications/stats - Get notification statistics
+// GET /api/notifications/:id - Get notification by ID
+// POST /api/notifications/:id/resend - Resend a notification
+api.route('/notifications', createNotificationRoutes());
+
+// Mount Incident routes
+// GET /api/incidents - List incidents
+// POST /api/incidents - Create incident
+// GET /api/incidents/:id - Get incident
+// PATCH /api/incidents/:id - Update incident
+// POST /api/incidents/:id/resolve - Resolve incident
+api.route('/incidents', createIncidentRoutes());
+
+// Mount Meta routes
+// POST /api/meta/connect/start - Start OAuth flow
+// POST /api/meta/connect/callback - OAuth callback
+// GET /api/meta/connections - List connections
+// DELETE /api/meta/connections/:id - Disconnect
+api.route('/meta', createMetaRoutes());
+
+// Mount Internal Meta routes
+// POST /api/internal/insights/sync - Sync insights (Cron trigger)
+api.route('/internal', createInternalMetaRoutes());
+
+// Mount Manual Mode routes
+// POST /api/manual/ad-bundles/register - Register manual ad bundle mapping
+// POST /api/manual/metrics/import - Import metrics from CSV
+api.route('/manual', createManualRoutes());
+
+// Mount Run Metrics routes (under /runs/:runId/metrics)
+// GET /api/runs/:runId/metrics - Get combined metrics for a run
+api.route('/runs', createRunMetricsRoutes());
 
 // Mount API routes
 app.route('/api', api);

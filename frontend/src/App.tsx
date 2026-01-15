@@ -12,6 +12,10 @@ import {
   RunListPage,
   RunWizardPage,
   RunDetailPage,
+  RunGenerationPage,
+  LpEditorPage,
+  CreativeEditorPage,
+  RunReportPage,
   IntentFormPage,
   IntentDetailPage,
   ReportsPage,
@@ -55,10 +59,16 @@ function App() {
             <Route path="/runs" element={<RunListPage />} />
             <Route path="/runs/new" element={<RunWizardPage />} />
             <Route path="/runs/:id" element={<RunDetailPage />} />
+            <Route path="/runs/:id/generation" element={<RunGenerationPage />} />
+            <Route path="/runs/:id/lp-editor" element={<LpEditorPage />} />
+            <Route path="/runs/:id/creative-editor" element={<CreativeEditorPage />} />
+            <Route path="/runs/:id/report" element={<RunReportPage />} />
 
             {/* Intents */}
             <Route path="/runs/:runId/intents/new" element={<IntentFormPage />} />
             <Route path="/runs/:runId/intents/:intentId" element={<IntentDetailPage />} />
+            <Route path="/runs/:runId/intents/:intentId/lp" element={<LpEditorPage />} />
+            <Route path="/runs/:runId/intents/:intentId/creative" element={<CreativeEditorPage />} />
 
             {/* Reports */}
             <Route path="/reports" element={<ReportsPage />} />

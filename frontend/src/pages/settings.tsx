@@ -14,7 +14,7 @@ import {
   AlertDescription,
 } from '@/components/ui';
 import { apiClient } from '@/api/client';
-import { Settings, User, Building2, Bell, Shield, Check, Key, Plus, Trash2, Copy, Link } from 'lucide-react';
+import { User, Building2, Bell, Shield, Check, Key, Plus, Trash2, Copy, Link } from 'lucide-react';
 
 interface NotificationSettings {
   testCompleted: boolean;

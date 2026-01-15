@@ -18,7 +18,8 @@ import {
 } from '@/components/ui';
 import { runsApi } from '@/api';
 import { Plus, PlayCircle } from 'lucide-react';
-import type { RunStatus } from '@/types';
+// RunStatus type not directly used but kept as reference
+// import type { RunStatus } from '@/types';
 
 const statusLabels: Record<string, string> = {
   draft: '下書き',
@@ -135,8 +136,8 @@ export function RunListPage() {
                   const budgetCap = run.budget_cap ?? 0;
                   const spendTotal = run.spend_total ?? 0;
                   const progress = budgetCap > 0 ? (spendTotal / budgetCap) * 100 : 0;
-                  const mode = run.mode ?? run.operationMode ?? '-';
-                  const startedAt = run.started_at ?? run.launchedAt;
+                  const mode = run.mode ?? (run as unknown as { operationMode?: string }).operationMode ?? '-';
+                  const startedAt = run.started_at ?? (run as unknown as { launchedAt?: string }).launchedAt;
                   return (
                     <TableRow key={run.id}>
                       <TableCell>

@@ -11,7 +11,8 @@ import {
 } from '@/components/ui';
 import { projectsApi, runsApi } from '@/api';
 import { Plus, ArrowRight, PlayCircle, CheckCircle, PauseCircle, Clock } from 'lucide-react';
-import type { RunStatus } from '@/types';
+// RunStatus type imported for reference but not directly used
+// import type { RunStatus } from '@/types';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof PlayCircle }> = {
   draft: { label: '下書き', color: 'bg-gray-500', icon: Clock },
@@ -107,7 +108,7 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {runs.filter((r) => r.status === 'completed' || r.status === 'Completed').length}
+              {runs.filter((r) => r.status.toLowerCase() === 'completed').length}
             </div>
           </CardContent>
         </Card>

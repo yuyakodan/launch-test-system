@@ -19,7 +19,8 @@ import {
 import { projectsApi, runsApi } from '@/api';
 import { ProjectSettingsModal } from '@/components/features/project-settings-modal';
 import { ArrowLeft, Plus, Settings } from 'lucide-react';
-import type { RunStatus } from '@/types';
+// RunStatus type kept as reference
+// import type { RunStatus } from '@/types';
 
 const statusLabels: Record<string, string> = {
   draft: '下書き',
@@ -91,7 +92,8 @@ export function ProjectDetailPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
             {(() => {
-              const isActive = project.archivedAt == null && (project.status == null || ['active', 'Active'].includes(project.status));
+              const archivedAt = (project as unknown as { archivedAt?: string }).archivedAt;
+              const isActive = archivedAt == null && (project.status == null || ['active', 'Active'].includes(project.status));
               return (
                 <Badge variant={isActive ? 'default' : 'secondary'}>
                   {isActive ? 'アクティブ' : 'アーカイブ'}
@@ -194,8 +196,8 @@ export function ProjectDetailPage() {
                 {runs.map((run) => {
                   const budgetCap = run.budget_cap ?? 0;
                   const spendTotal = run.spend_total ?? 0;
-                  const mode = run.mode ?? run.operationMode ?? '-';
-                  const createdAt = run.created_at ?? run.createdAt;
+                  const mode = run.mode ?? (run as unknown as { operationMode?: string }).operationMode ?? '-';
+                  const createdAt = run.created_at;
                   return (
                     <TableRow key={run.id}>
                       <TableCell>

@@ -52,6 +52,11 @@ export type {
   CreateAdCopyInput,
   UpdateAdCopyInput,
   AdCopyFilter,
+  IEventRepository,
+  CreateEventInput,
+  EventFilter,
+  BatchInsertResult,
+  EventAggregation,
 } from './interfaces/index.js';
 
 // D1 Implementations
@@ -71,6 +76,7 @@ export {
   D1LpVariantRepository,
   D1CreativeVariantRepository,
   D1AdCopyRepository,
+  D1EventRepository,
 } from './d1/index.js';
 export type { ColumnMapping } from './d1/index.js';
 

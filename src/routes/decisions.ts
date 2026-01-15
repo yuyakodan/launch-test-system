@@ -2,8 +2,10 @@
  * Decision Routes
  * Handles decision and report endpoints for runs
  *
- * POST /runs/:id/decide - Make a decision for a run
- * GET /runs/:id/report - Get report for a run
+ * POST /runs/:id/decide - Make a decision for a run with statistical analysis
+ * GET /runs/:id/report - Get report for a run including decision data
+ * GET /runs/:id/decisions - Get decision history for a run
+ * GET /runs/:id/decisions/:decisionId - Get a specific decision
  */
 
 import { Hono } from 'hono';
@@ -12,9 +14,14 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { AuditService } from '../services/audit.js';
 import { createD1Repositories } from '../repositories/factory.js';
-import { evaluateConfidence, createVariantMetrics } from '../services/statistics/confidence-evaluator.js';
 import { RunStateMachine } from '../services/run-state-machine.js';
-import type { DecisionResult, VariantMetrics } from '../types/statistics.js';
+import {
+  analyzeVariants,
+  parseDecisionConfig,
+  DecisionService,
+  DEFAULT_SAMPLE_THRESHOLDS,
+  DEFAULT_CONFIDENCE_THRESHOLDS,
+} from '../services/decision.js';
 
 type DecisionEnv = {
   Bindings: Env;
@@ -31,8 +38,10 @@ interface DecideRequest {
     clicks: number;
     conversions: number;
   }>;
-  /** Whether to finalize the decision */
+  /** Whether to finalize the decision and save to database */
   finalize?: boolean;
+  /** Whether to persist the decision as draft (even if not finalized) */
+  persist?: boolean;
 }
 
 /**
@@ -47,8 +56,9 @@ export function createDecisionRoutes() {
   /**
    * POST /runs/:id/decide - Make a decision for a run
    *
-   * Analyzes variant performance and determines the winner
-   * Can optionally finalize the decision
+   * Analyzes variant performance using statistical methods (Wilson CI and Bayesian)
+   * Determines confidence level: insufficient, directional, or confident
+   * Can persist decision to database and optionally finalize it
    */
   decisions.post('/runs/:id/decide', requirePermission('decision', 'create'), async (c) => {
     const authContext = c.get('auth');
@@ -154,66 +164,80 @@ export function createDecisionRoutes() {
       }
     }
 
-    // Convert to VariantMetrics
-    const variantMetrics: VariantMetrics[] = body.variants.map((v) =>
-      createVariantMetrics(v.variantId, v.clicks, v.conversions)
-    );
+    // Parse decision config from run design
+    const decisionConfig = parseDecisionConfig(run.runDesignJson);
 
-    // Evaluate confidence
-    const decisionResult: DecisionResult = evaluateConfidence(variantMetrics);
+    // Run statistical analysis using the Decision Service
+    const analysisResult = analyzeVariants(body.variants, decisionConfig);
 
     // Build response data
-    const responseData = {
+    const responseData: Record<string, unknown> = {
       runId,
-      confidence: decisionResult.confidence,
-      winnerId: decisionResult.winnerId,
-      ranking: decisionResult.ranking.map((entry) => ({
-        rank: entry.rank,
-        variantId: entry.variantId,
-        clicks: entry.metrics.clicks,
-        conversions: entry.metrics.conversions,
-        cvr: entry.metrics.cvr,
-        score: entry.score,
-        bayesianWinProbability: entry.bayesianWinProbability,
-        wilsonCi: {
-          lower: entry.wilsonCi.lower,
-          upper: entry.wilsonCi.upper,
-          point: entry.wilsonCi.point,
-        },
-      })),
-      rationale: decisionResult.rationale,
-      recommendation: decisionResult.recommendation,
-      additionalSamplesNeeded: decisionResult.additionalSamplesNeeded,
+      confidence: analysisResult.confidence,
+      winnerId: analysisResult.winnerId,
+      winnerInfo: analysisResult.winnerInfo,
+      ranking: analysisResult.ranking,
+      stats: analysisResult.stats,
+      rationale: analysisResult.rationale,
+      recommendation: analysisResult.recommendation,
+      additionalSamplesNeeded: analysisResult.additionalSamplesNeeded,
       finalized: false,
+      persisted: false,
+      decisionId: null,
       analyzedAt: new Date().toISOString(),
     };
 
-    // If finalize is true and we have a confident result, mark run as completed
-    if (body.finalize && decisionResult.confidence === 'confident') {
-      if (RunStateMachine.isValidTransition(run.status, 'Completed')) {
-        await repos.run.markCompleted(runId);
-        responseData.finalized = true;
+    // Persist decision if requested or finalize is true
+    const shouldPersist = body.persist || body.finalize;
+    const shouldFinalize = body.finalize && analysisResult.confidence === 'confident';
 
-        // Record in audit log
-        const auditService = new AuditService(c.env.DB);
-        await auditService.log({
-          tenantId: authContext.tenantId,
-          actorUserId: authContext.userId,
-          action: 'complete',
-          targetType: 'run',
-          targetId: runId,
-          before: {
-            status: run.status,
-          },
-          after: {
-            status: 'Completed',
-            winnerId: decisionResult.winnerId,
-            confidence: decisionResult.confidence,
-          },
-          requestId: authContext.requestId,
-          ipHash: c.req.header('CF-Connecting-IP') ?? undefined,
-          userAgent: c.req.header('User-Agent') ?? undefined,
-        });
+    if (shouldPersist) {
+      const decisionService = new DecisionService(repos.decision);
+
+      try {
+        const decision = await decisionService.createDecision(
+          runId,
+          analysisResult,
+          authContext.userId,
+          shouldFinalize
+        );
+
+        responseData.persisted = true;
+        responseData.decisionId = decision.id;
+
+        if (shouldFinalize) {
+          responseData.finalized = true;
+
+          // If finalized and run can transition to Completed, update run status
+          if (RunStateMachine.isValidTransition(run.status, 'Completed')) {
+            await repos.run.markCompleted(runId);
+
+            // Record in audit log
+            const auditService = new AuditService(c.env.DB);
+            await auditService.log({
+              tenantId: authContext.tenantId,
+              actorUserId: authContext.userId,
+              action: 'decision.finalize',
+              targetType: 'run',
+              targetId: runId,
+              before: {
+                status: run.status,
+              },
+              after: {
+                status: 'Completed',
+                decisionId: decision.id,
+                winnerId: analysisResult.winnerId,
+                confidence: analysisResult.confidence,
+              },
+              requestId: authContext.requestId,
+              ipHash: c.req.header('CF-Connecting-IP') ?? undefined,
+              userAgent: c.req.header('User-Agent') ?? undefined,
+            });
+          }
+        }
+      } catch (error) {
+        // Log error but continue with response (analysis result is still valid)
+        console.error('Failed to persist decision:', error);
       }
     }
 
@@ -224,9 +248,144 @@ export function createDecisionRoutes() {
   });
 
   /**
+   * GET /runs/:id/decisions - Get decision history for a run
+   */
+  decisions.get('/runs/:id/decisions', requirePermission('run', 'read'), async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+    const runId = c.req.param('id');
+
+    // Get run
+    const run = await repos.run.findById(runId);
+    if (!run) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Run not found',
+        },
+        404
+      );
+    }
+
+    // Verify run's project belongs to tenant
+    const belongsToTenant = await repos.project.belongsToTenant(run.projectId, authContext.tenantId);
+    if (!belongsToTenant) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Run not found',
+        },
+        404
+      );
+    }
+
+    // Get pagination params
+    const limit = parseInt(c.req.query('limit') ?? '100', 10);
+    const offset = parseInt(c.req.query('offset') ?? '0', 10);
+
+    // Get decisions
+    const decisionService = new DecisionService(repos.decision);
+    const result = await decisionService.getDecisionHistory(runId);
+
+    // Parse JSON fields for response
+    const items = result.items.map((d) => ({
+      id: d.id,
+      runId: d.runId,
+      status: d.status,
+      confidence: d.confidence,
+      winner: safeJsonParse(d.winnerJson),
+      ranking: safeJsonParse(d.rankingJson),
+      stats: safeJsonParse(d.statsJson),
+      rationale: d.rationale,
+      decidedAt: d.decidedAt,
+      createdByUserId: d.createdByUserId,
+      createdAt: d.createdAt,
+    }));
+
+    return c.json({
+      status: 'ok',
+      data: {
+        items,
+        total: result.total,
+        limit: result.limit,
+        offset: result.offset,
+        hasMore: result.hasMore,
+      },
+    });
+  });
+
+  /**
+   * GET /runs/:id/decisions/:decisionId - Get a specific decision
+   */
+  decisions.get('/runs/:id/decisions/:decisionId', requirePermission('run', 'read'), async (c) => {
+    const authContext = c.get('auth');
+    const repos = createD1Repositories(c.env.DB);
+    const runId = c.req.param('id');
+    const decisionId = c.req.param('decisionId');
+
+    // Get run
+    const run = await repos.run.findById(runId);
+    if (!run) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Run not found',
+        },
+        404
+      );
+    }
+
+    // Verify run's project belongs to tenant
+    const belongsToTenant = await repos.project.belongsToTenant(run.projectId, authContext.tenantId);
+    if (!belongsToTenant) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Run not found',
+        },
+        404
+      );
+    }
+
+    // Get decision
+    const decision = await repos.decision.findById(decisionId);
+    if (!decision || decision.runId !== runId) {
+      return c.json(
+        {
+          status: 'error',
+          error: 'not_found',
+          message: 'Decision not found',
+        },
+        404
+      );
+    }
+
+    return c.json({
+      status: 'ok',
+      data: {
+        id: decision.id,
+        runId: decision.runId,
+        status: decision.status,
+        confidence: decision.confidence,
+        winner: safeJsonParse(decision.winnerJson),
+        ranking: safeJsonParse(decision.rankingJson),
+        stats: safeJsonParse(decision.statsJson),
+        rationale: decision.rationale,
+        decidedAt: decision.decidedAt,
+        createdByUserId: decision.createdByUserId,
+        createdAt: decision.createdAt,
+      },
+    });
+  });
+
+  /**
    * GET /runs/:id/report - Get report for a run
    *
-   * Returns a summary report of the run's performance
+   * Returns a summary report of the run's performance including decision data
    */
   decisions.get('/runs/:id/report', requirePermission('run', 'read'), async (c) => {
     const authContext = c.get('auth');
@@ -265,6 +424,11 @@ export function createDecisionRoutes() {
     // Get intents for the run
     const intentsResult = await repos.intent.findByRunId(runId, { limit: 100 });
 
+    // Get latest decision
+    const decisionService = new DecisionService(repos.decision);
+    const latestDecision = await decisionService.getLatestDecision(runId);
+    const finalDecision = await decisionService.getFinalDecision(runId);
+
     // Calculate run duration
     let durationMs: number | null = null;
     if (run.launchedAt) {
@@ -275,6 +439,9 @@ export function createDecisionRoutes() {
 
     // Get status info
     const statusInfo = RunStateMachine.getStatusInfo(run.status);
+
+    // Parse decision config from run design
+    const decisionConfig = parseDecisionConfig(run.runDesignJson);
 
     // Build report
     const report = {
@@ -296,6 +463,8 @@ export function createDecisionRoutes() {
         runDesign: safeJsonParse(run.runDesignJson),
         stopRules: safeJsonParse(run.stopDslJson),
         decisionRules: safeJsonParse(run.decisionRulesJson),
+        sampleThresholds: decisionConfig.sampleThresholds,
+        confidenceThresholds: decisionConfig.confidenceThresholds,
       },
       intents: {
         total: intentsResult.total,
@@ -312,6 +481,30 @@ export function createDecisionRoutes() {
           status: intent.status,
         })),
       },
+      decision: {
+        hasFinalDecision: !!finalDecision,
+        finalDecision: finalDecision
+          ? {
+              id: finalDecision.id,
+              confidence: finalDecision.confidence,
+              winner: safeJsonParse(finalDecision.winnerJson),
+              ranking: safeJsonParse(finalDecision.rankingJson),
+              rationale: finalDecision.rationale,
+              decidedAt: finalDecision.decidedAt,
+            }
+          : null,
+        latestDecision: latestDecision
+          ? {
+              id: latestDecision.id,
+              status: latestDecision.status,
+              confidence: latestDecision.confidence,
+              winner: safeJsonParse(latestDecision.winnerJson),
+              ranking: safeJsonParse(latestDecision.rankingJson),
+              rationale: latestDecision.rationale,
+              createdAt: latestDecision.createdAt,
+            }
+          : null,
+      },
       generatedAt: new Date().toISOString(),
     };
 
@@ -327,11 +520,11 @@ export function createDecisionRoutes() {
 /**
  * Safely parse JSON, returning null on error
  */
-function safeJsonParse(json: string): Record<string, unknown> | null {
+function safeJsonParse(json: string): Record<string, unknown> | unknown[] | null {
   try {
     const parsed = JSON.parse(json);
     if (typeof parsed === 'object' && parsed !== null) {
-      return parsed as Record<string, unknown>;
+      return parsed;
     }
     return null;
   } catch {

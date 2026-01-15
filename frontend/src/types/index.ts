@@ -262,3 +262,225 @@ export interface TrackingEvent {
   session_id: string;
   properties?: Record<string, unknown>;
 }
+
+// Job types
+export type JobType =
+  | 'generate'
+  | 'qa_smoke'
+  | 'publish'
+  | 'meta_sync'
+  | 'stop_eval'
+  | 'report'
+  | 'notify'
+  | 'import_parse';
+
+export type JobStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
+
+export interface Job {
+  id: string;
+  tenant_id: string;
+  job_type: JobType;
+  status: JobStatus;
+  payload_json: Record<string, unknown>;
+  result_json: Record<string, unknown>;
+  attempts: number;
+  max_attempts: number;
+  last_error: string;
+  scheduled_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Extended Run Design (from requirements)
+export interface RunDesignFull {
+  version: string;
+  operation_mode: RunMode;
+  timezone?: string;
+  kpi: {
+    primary: 'cpa' | 'cv' | 'cvr';
+    secondary?: ('cpa' | 'cv' | 'cvr' | 'ctr' | 'cpc' | 'cpm' | 'spend')[];
+    optimization_event?: string;
+  };
+  budget: {
+    currency: string;
+    total_cap: number;
+    daily_cap?: number;
+  };
+  compare_axis: {
+    mode: 'intent' | 'lp_variant' | 'creative_variant' | 'bundle';
+    notes?: string;
+  };
+  form_mode: {
+    type: 'internal' | 'external_redirect' | 'webhook_submit';
+    external_url?: string;
+    webhook_url?: string;
+  };
+  sample_thresholds: {
+    insufficient: { min_total_clicks: number; min_total_cvs: number };
+    directional: { min_total_clicks: number; min_total_cvs: number };
+    confident: { min_total_cvs: number; min_per_variant_cvs: number };
+  };
+  confidence_thresholds: {
+    method: 'wilson' | 'bayes';
+    alpha: number;
+    min_effect: number;
+  };
+  utm_policy: {
+    source: string;
+    medium: string;
+    campaign_key: string;
+    content_key: string;
+  };
+}
+
+// Stop DSL (from requirements)
+export interface StopDSLFull {
+  version: string;
+  evaluation_interval_sec: number;
+  safe_mode_on_error: boolean;
+  rules: StopRule[];
+}
+
+export interface StopRule {
+  id: string;
+  enabled: boolean;
+  scope: 'run' | 'bundle' | 'notify_only';
+  type:
+    | 'spend_total_cap'
+    | 'spend_daily_cap'
+    | 'cpa_cap'
+    | 'cv_zero_duration'
+    | 'measurement_anomaly'
+    | 'meta_rejected'
+    | 'sync_failure_streak';
+  gating: {
+    min_elapsed_sec?: number;
+    min_total_clicks?: number;
+    min_total_cvs?: number;
+    min_impressions?: number;
+    min_spend?: number;
+  };
+  params: Record<string, unknown>;
+  action: {
+    type: 'pause_run' | 'pause_bundle' | 'notify_only' | 'create_incident';
+    notify: boolean;
+    message: string;
+  };
+}
+
+// Fixed Granularity (from requirements)
+export interface FixedGranularityFull {
+  version: string;
+  fixed: {
+    intent?: {
+      lock_intent_ids: string[];
+    };
+    lp?: {
+      lock_structure: boolean;
+      lock_theme: boolean;
+      lock_blocks: ('fv' | 'empathy' | 'solution' | 'proof' | 'steps' | 'faq' | 'cta' | 'disclaimer')[];
+      lock_copy_paths: string[];
+    };
+    banner?: {
+      lock_template: boolean;
+      lock_image_layout: boolean;
+      lock_text_layers: boolean;
+      lock_sizes: ('1:1' | '4:5' | '9:16')[];
+    };
+    ad_copy?: {
+      lock_primary_text: boolean;
+      lock_headline: boolean;
+      lock_description: boolean;
+    };
+  };
+  explore: {
+    intent?: {
+      max_new_intents: number;
+      allow_replace_intents: boolean;
+    };
+    lp?: {
+      max_new_fv_copies: number;
+      max_new_cta_copies: number;
+      allow_block_reorder: boolean;
+    };
+    banner?: {
+      max_new_text_variants: number;
+      allow_new_templates: boolean;
+    };
+  };
+}
+
+// LP Block types
+export type LpBlockType = 'fv' | 'empathy' | 'solution' | 'proof' | 'steps' | 'faq' | 'cta' | 'disclaimer';
+
+export interface LpBlock {
+  id: string;
+  type: LpBlockType;
+  order: number;
+  content: Record<string, unknown>;
+  visible: boolean;
+}
+
+export interface LpBlocksJson {
+  blocks: LpBlock[];
+  theme?: {
+    primaryColor?: string;
+    fontFamily?: string;
+    layout?: string;
+  };
+}
+
+// Extended LP Variant with blocks
+export interface LpVariantFull extends LpVariant {
+  blocks_json: LpBlocksJson;
+  theme_json: Record<string, unknown>;
+}
+
+// Creative Variant sizes
+export type CreativeSize = '1:1' | '4:5' | '9:16';
+
+export interface TextLayer {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontSize: number;
+  fontWeight: 'normal' | 'bold';
+  color: string;
+  align: 'left' | 'center' | 'right';
+}
+
+export interface CreativeVariantFull extends CreativeVariant {
+  size: CreativeSize;
+  text_layers_json: {
+    layers: TextLayer[];
+  };
+  image_r2_key: string;
+}
+
+// Incident types
+export type IncidentType =
+  | 'meta_rejected'
+  | 'meta_account_issue'
+  | 'api_outage'
+  | 'measurement_issue'
+  | 'other';
+
+export type IncidentSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type IncidentStatus = 'open' | 'mitigating' | 'resolved';
+
+export interface Incident {
+  id: string;
+  tenant_id: string;
+  run_id?: string;
+  incident_type: IncidentType;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  reason: string;
+  meta_json: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  resolved_at?: string;
+}
