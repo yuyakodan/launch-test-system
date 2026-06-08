@@ -26,7 +26,7 @@ jobs:
         run: npm test -- --coverage --if-present
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         if: always()
         with:
           fail_ci_if_error: false
