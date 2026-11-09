@@ -33,7 +33,7 @@
   ],
   "author": "",
   "dependencies": {
-    "hono": "^4.13.14",
+    "hono": "^4.13.16",
     "zod": "^3.23.8"
   },
   "devDependencies": {
